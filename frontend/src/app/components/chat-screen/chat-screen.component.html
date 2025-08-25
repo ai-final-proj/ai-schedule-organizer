@@ -1,0 +1,59 @@
+<div class="chat-container">
+  <div class="chat-header">
+    <h2>AI Assistant</h2>
+    <button class="btn-close" (click)="onClose()">×</button>
+  </div>
+
+  <div class="chat-messages">
+    <div class="message ai-message">
+      <div class="message-avatar">AI</div>
+      <div class="message-content">
+        <p>Hello! I'm your AI assistant. How can I help you with your schedule management today?</p>
+        <span class="message-time">2:30 PM</span>
+      </div>
+    </div>
+
+    <div class="message user-message">
+      <div class="message-content">
+        <p>Can you help me create a new schedule for the Web Development cohort?</p>
+        <span class="message-time">2:31 PM</span>
+      </div>
+    </div>
+
+    <div class="message ai-message">
+      <div class="message-avatar">AI</div>
+      <div class="message-content">
+        <p>Of course! I can help you create a new schedule. What specific details do you need for the Web Development cohort schedule?</p>
+        <span class="message-time">2:32 PM</span>
+      </div>
+    </div>
+
+    <div class="message user-message">
+      <div class="message-content">
+        <p>I need a 2-hour session on JavaScript fundamentals for next Wednesday.</p>
+        <span class="message-time">2:33 PM</span>
+      </div>
+    </div>
+
+    <div class="message ai-message">
+      <div class="message-avatar">AI</div>
+      <div class="message-content">
+        <p>I'll help you create that schedule. Let me gather the necessary information:</p>
+        <ul>
+          <li>Topic: JavaScript Fundamentals</li>
+          <li>Duration: 2 hours</li>
+          <li>Date: Next Wednesday</li>
+          <li>Cohort: Web Development</li>
+        </ul>
+        <p>Would you like me to proceed with creating this schedule?</p>
+        <span class="message-time">2:34 PM</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-input">
+    <input type="text" placeholder="Type your message..." class="message-input">
+    <button class="btn-send">Send</button>
+  </div>
+</div>
+

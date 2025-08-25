@@ -1,0 +1,30 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+
+# Angular build caches
+.angular/
+.cache/
+
+# Dist output
+/dist/
+
+# Env files
+*.local
+*.env
+
+# Editor
+.vscode/
+.idea/
+.DS_Store
+
+# NPM logs
+*.log
+
+# Docker
+*.pid
+
