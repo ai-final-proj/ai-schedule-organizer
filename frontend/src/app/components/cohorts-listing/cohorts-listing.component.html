@@ -1,59 +1,56 @@
-<div class="cohorts-container">
-  <h2>Cohorts Management</h2>
+<section class="cohorts-page">
+  <header class="page-header">
+    <h1 class="page-title">Cohorts</h1>
+    <p class="page-subtitle">Manage cohorts and track their progress through different programs.</p>
+  </header>
 
-  <div class="cohorts-grid">
-    <div class="cohort-card">
-      <div class="cohort-header">
-        <h3>Web Development 2024</h3>
-        <span class="status active">Active</span>
-      </div>
-      <div class="cohort-details">
-        <p><strong>Start Date:</strong> January 15, 2024</p>
-        <p><strong>End Date:</strong> June 30, 2024</p>
-        <p><strong>Students:</strong> 25</p>
-        <p><strong>Instructor:</strong> Sarah Wilson</p>
-      </div>
-      <div class="cohort-actions">
-        <button class="btn-view">View Details</button>
-        <button class="btn-edit">Edit</button>
-      </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">All Cohorts</div>
+      <div class="card-subtitle">Overview of all cohorts across different programs and time periods.</div>
     </div>
 
-    <div class="cohort-card">
-      <div class="cohort-header">
-        <h3>Data Science Bootcamp</h3>
-        <span class="status active">Active</span>
-      </div>
-      <div class="cohort-details">
-        <p><strong>Start Date:</strong> March 1, 2024</p>
-        <p><strong>End Date:</strong> August 15, 2024</p>
-        <p><strong>Students:</strong> 18</p>
-        <p><strong>Instructor:</strong> Dr. Michael Chen</p>
-      </div>
-      <div class="cohort-actions">
-        <button class="btn-view">View Details</button>
-        <button class="btn-edit">Edit</button>
-      </div>
-    </div>
+    <div class="table-wrap" [class.loading]="loading">
+      <table class="cohorts-table" role="table" *ngIf="!loading; else skeleton">
+        <thead>
+          <tr>
+            <th scope="col">Cohort Name</th>
+            <th scope="col">Subgroups</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
 
-    <div class="cohort-card">
-      <div class="cohort-header">
-        <h3>UX/UI Design</h3>
-        <span class="status upcoming">Upcoming</span>
-      </div>
-      <div class="cohort-details">
-        <p><strong>Start Date:</strong> May 1, 2024</p>
-        <p><strong>End Date:</strong> October 31, 2024</p>
-        <p><strong>Students:</strong> 12</p>
-        <p><strong>Instructor:</strong> Lisa Rodriguez</p>
-      </div>
-      <div class="cohort-actions">
-        <button class="btn-view">View Details</button>
-        <button class="btn-edit">Edit</button>
-      </div>
+        <tbody>
+          <tr *ngFor="let r of rows; trackBy: trackByName">
+            <td class="cell-name">{{ r.name }}</td>
+            <td class="cell-subgroups">
+              <ng-container *ngIf="r.subgroups.length; else na">
+                {{ r.subgroups.join(', ') }}
+              </ng-container>
+              <ng-template #na>—</ng-template>
+            </td>
+            <td>
+              <span class="badge status"
+                    [class.active]="r.status === 'Active'"
+                    [class.completed]="r.status === 'Completed'"
+                    [class.upcoming]="r.status === 'Upcoming'"
+                    [class.planning]="r.status === 'Planning'">
+                {{ r.status }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-template #skeleton>
+        <div class="skeleton">
+          <div class="row" *ngFor="let i of [1,2,3,4]">
+            <span class="sk sk-name"></span>
+            <span class="sk sk-subgroups"></span>
+            <span class="sk sk-status"></span>
+          </div>
+        </div>
+      </ng-template>
     </div>
   </div>
-
-  <button class="btn-add">Create New Cohort</button>
-</div>
-
+</section>

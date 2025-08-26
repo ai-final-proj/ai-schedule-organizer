@@ -1,51 +1,62 @@
-<div class="users-container">
-  <h2>Users Management</h2>
+<section class="users-page">
+  <!-- Page title + subtitle (kept minimal; navbar header can be added later) -->
+  <header class="page-header">
+    <h1 class="page-title">Users</h1>
+    <p class="page-subtitle">Manage all users in the system including students, instructors, and administrators.</p>
+  </header>
 
-  <div class="users-table">
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>John Doe</td>
-          <td>john.doe&#64;example.com</td>
-          <td>Student</td>
-          <td><span class="status active">Active</span></td>
-          <td>
-            <button class="btn-edit">Edit</button>
-            <button class="btn-delete">Delete</button>
-          </td>
-        </tr>
-        <tr>
-          <td>Jane Smith</td>
-          <td>jane.smith&#64;example.com</td>
-          <td>Instructor</td>
-          <td><span class="status active">Active</span></td>
-          <td>
-            <button class="btn-edit">Edit</button>
-            <button class="btn-delete">Delete</button>
-          </td>
-        </tr>
-        <tr>
-          <td>Mike Johnson</td>
-          <td>mike.johnson&#64;example.com</td>
-          <td>Student</td>
-          <td><span class="status inactive">Inactive</span></td>
-          <td>
-            <button class="btn-edit">Edit</button>
-            <button class="btn-delete">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Card container -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">All Users</div>
+      <div class="card-subtitle">A complete list of all registered users in the system.</div>
+    </div>
+
+    <div class="table-wrap" [class.loading]="loading">
+      <table class="users-table" role="table" *ngIf="!loading; else skeleton">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Role</th>
+            <th scope="col">Status</th>
+            <th scope="col">Cohort</th>
+            <th scope="col">Subgroup</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let r of rows; trackBy: trackByEmail">
+            <td class="cell-name">{{ r.name }}</td>
+            <td class="cell-email">
+              <a class="email" [href]="'mailto:' + r.email">{{ r.email }}</a>
+            </td>
+            <td>
+              <span class="badge role">{{ r.role }}</span>
+            </td>
+            <td>
+              <span class="badge status" [class.active]="r.status === 'Active'" [class.inactive]="r.status === 'Inactive'">
+                {{ r.status }}
+              </span>
+            </td>
+            <td>{{ r.cohort }}</td>
+            <td>{{ r.subgroup }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-template #skeleton>
+        <div class="skeleton">
+          <div class="row" *ngFor="let i of [1,2,3,4,5]">
+            <span class="sk sk-name"></span>
+            <span class="sk sk-email"></span>
+            <span class="sk sk-role"></span>
+            <span class="sk sk-status"></span>
+            <span class="sk sk-cohort"></span>
+            <span class="sk sk-subgroup"></span>
+          </div>
+        </div>
+      </ng-template>
+    </div>
   </div>
-
-  <button class="btn-add">Add New User</button>
-</div>
+</section>

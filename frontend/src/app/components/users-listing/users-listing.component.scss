@@ -1,79 +1,147 @@
-.users-container {
-  padding: 20px;
+.users-page {
+  padding: 16px;
+  color: var(--foreground);
 }
 
-.users-container h2 {
-  margin-bottom: 20px;
-  color: #333;
+.page-header {
+  margin: 8px 4px 16px;
+  .page-title {
+    font-size: var(--text-xl, 1.25rem);
+    font-weight: var(--font-weight-medium, 600);
+    margin: 0 0 4px;
+  }
+  .page-subtitle {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: var(--text-base, 1rem);
+  }
+}
+
+/* Card */
+.card {
+  background: var(--card, #fff);
+  border: 1px solid var(--border, rgba(0,0,0,0.08));
+  border-radius: calc(var(--radius, 10px) + 2px);
+  padding: 12px;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.04),
+    0 0 0 1px rgba(0,0,0,0.02) inset;
+}
+
+.card-head {
+  padding: 8px 8px 12px;
+  .card-title {
+    font-weight: var(--font-weight-medium, 600);
+    color: var(--foreground);
+    margin-bottom: 4px;
+  }
+  .card-subtitle {
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+  }
+}
+
+/* Table */
+.table-wrap {
+  overflow: auto;
 }
 
 .users-table {
-  margin-bottom: 20px;
-}
-
-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: var(--card);
+  color: var(--foreground);
+
+  thead th {
+    text-align: left;
+    padding: 12px 14px;
+    font-weight: var(--font-weight-medium);
+    color: var(--muted-foreground);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 14px;
+    border-bottom: 1px solid color-mix(in oklch, var(--border) 80%, transparent);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .cell-name { font-weight: var(--font-weight-medium); }
+  .cell-email .email {
+    color: inherit;
+    text-decoration: none;
+  }
+  .cell-email .email:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  line-height: 1;
+  border: 1px solid transparent;
+}
+
+/* Role = light neutral pill */
+.badge.role {
+  background: var(--accent, #e9ebef);
+  color: color-mix(in oklch, var(--foreground) 85%, transparent);
+  border-color: color-mix(in oklch, var(--border) 60%, transparent);
+}
+
+/* Status = dark pill for Active, muted for Inactive (matches screenshot) */
+.badge.status.active {
+  background: #0a0b14;                      /* dark navy */
+  color: #ffffff;
+  border-color: rgba(255,255,255,0.08);
+}
+.badge.status.inactive {
+  background: var(--muted, #ececf0);
+  color: color-mix(in oklch, var(--foreground) 80%, transparent);
+  border-color: color-mix(in oklch, var(--border) 60%, transparent);
+}
+
+/* Skeleton while loading */
+.skeleton {
+  display: grid;
+  gap: 10px;
+  padding: 8px;
+}
+.skeleton .row {
+  display: grid;
+  grid-template-columns: 1.4fr 1.8fr .8fr .8fr 1fr 1fr;
+  gap: 12px;
+  align-items: center;
+}
+.sk {
+  display: block;
+  height: 16px;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: linear-gradient(90deg,
+    color-mix(in oklch, var(--muted, #ececf0) 75%, transparent),
+    color-mix(in oklch, var(--muted, #ececf0) 55%, transparent) 50%,
+    color-mix(in oklch, var(--muted, #ececf0) 75%, transparent) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
 }
+.sk-name { width: 60%; }
+.sk-email { width: 80%; }
+.sk-role { width: 40%; }
+.sk-status { width: 40%; height: 20px; border-radius: 9999px; }
+.sk-cohort { width: 50%; }
+.sk-subgroup { width: 40%; }
 
-th, td {
-  padding: 12px 16px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-}
-
-th {
-  background: #f8f9fa;
-  font-weight: 600;
-  color: #333;
-}
-
-.status {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.status.active {
-  background: #d4edda;
-  color: #155724;
-}
-
-.status.inactive {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.btn-edit, .btn-delete {
-  padding: 6px 12px;
-  margin: 0 4px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.btn-edit {
-  background: #007bff;
-  color: white;
-}
-
-.btn-delete {
-  background: #dc3545;
-  color: white;
-}
-
-.btn-add {
-  padding: 10px 20px;
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

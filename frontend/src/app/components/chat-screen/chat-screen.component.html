@@ -1,59 +1,57 @@
-<div class="chat-container">
-  <div class="chat-header">
-    <h2>AI Assistant</h2>
-    <button class="btn-close" (click)="onClose()">×</button>
+<!-- Full-height shell -->
+<section class="chat-page">
+  <!-- Card container -->
+  <div class="chat-card">
+    <!-- Header: back + title -->
+    <header class="chat-header">
+      <button class="icon-btn" type="button" (click)="back()" aria-label="Back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <h2 class="title">AI Assistant Chat</h2>
+      <span class="spacer"></span>
+    </header>
+
+    <!-- Scrollable messages area -->
+    <div class="messages" #messagesScroller>
+      <div class="bubble ai">
+        <div class="avatar">AI</div>
+        <div class="content">
+          <p>Hello! I'm your AI Schedule Organizer assistant. I can help you manage schedules, resolve conflicts, and make recommendations. How can I assist you today?</p>
+          <span class="time">2:30 PM</span>
+        </div>
+      </div>
+
+      <ng-container *ngFor="let m of messages">
+        <div class="bubble" [class.user]="m.type === 'user'" [class.ai]="m.type === 'ai'">
+          <div class="avatar" *ngIf="m.type === 'ai'">AI</div>
+          <div class="content">
+            <p>{{ m.content }}</p>
+            <span class="time">{{ m.time }}</span>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Sticky input row -->
+    <form class="input-row" (submit)="$event.preventDefault(); send()">
+      <input
+        class="msg-input"
+        type="text"
+        [(ngModel)]="inputValue"
+        (keydown)="onKeydown($event)"
+        placeholder="Ask me about schedules, users, or programs..."
+        autocomplete="off"
+      />
+      <button class="send-btn" type="submit" aria-label="Send">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 2L11 13"></path>
+          <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
+        </svg>
+      </button>
+    </form>
   </div>
-
-  <div class="chat-messages">
-    <div class="message ai-message">
-      <div class="message-avatar">AI</div>
-      <div class="message-content">
-        <p>Hello! I'm your AI assistant. How can I help you with your schedule management today?</p>
-        <span class="message-time">2:30 PM</span>
-      </div>
-    </div>
-
-    <div class="message user-message">
-      <div class="message-content">
-        <p>Can you help me create a new schedule for the Web Development cohort?</p>
-        <span class="message-time">2:31 PM</span>
-      </div>
-    </div>
-
-    <div class="message ai-message">
-      <div class="message-avatar">AI</div>
-      <div class="message-content">
-        <p>Of course! I can help you create a new schedule. What specific details do you need for the Web Development cohort schedule?</p>
-        <span class="message-time">2:32 PM</span>
-      </div>
-    </div>
-
-    <div class="message user-message">
-      <div class="message-content">
-        <p>I need a 2-hour session on JavaScript fundamentals for next Wednesday.</p>
-        <span class="message-time">2:33 PM</span>
-      </div>
-    </div>
-
-    <div class="message ai-message">
-      <div class="message-avatar">AI</div>
-      <div class="message-content">
-        <p>I'll help you create that schedule. Let me gather the necessary information:</p>
-        <ul>
-          <li>Topic: JavaScript Fundamentals</li>
-          <li>Duration: 2 hours</li>
-          <li>Date: Next Wednesday</li>
-          <li>Cohort: Web Development</li>
-        </ul>
-        <p>Would you like me to proceed with creating this schedule?</p>
-        <span class="message-time">2:34 PM</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="chat-input">
-    <input type="text" placeholder="Type your message..." class="message-input">
-    <button class="btn-send">Send</button>
-  </div>
-</div>
-
+</section>

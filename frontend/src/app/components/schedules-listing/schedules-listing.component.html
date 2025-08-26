@@ -1,82 +1,65 @@
-<div class="schedules-container">
-  <h2>Schedule Management</h2>
+<section class="schedules-page">
+  <header class="page-header">
+    <h1 class="page-title">Schedules</h1>
+    <p class="page-subtitle">View and manage all scheduled classes, workshops, and events.</p>
+  </header>
 
-  <div class="schedule-filters">
-    <select class="filter-select">
-      <option>All Cohorts</option>
-      <option>Web Development 2024</option>
-      <option>Data Science Bootcamp</option>
-      <option>UX/UI Design</option>
-    </select>
-    <select class="filter-select">
-      <option>All Status</option>
-      <option>Upcoming</option>
-      <option>In Progress</option>
-      <option>Completed</option>
-    </select>
-  </div>
-
-  <div class="schedules-list">
-    <div class="schedule-item">
-      <div class="schedule-info">
-        <h3>Introduction to HTML & CSS</h3>
-        <p class="schedule-meta">Web Development 2024 • Group A • Room 101</p>
-        <p class="schedule-time">Monday, Jan 15, 2024 • 9:00 AM - 11:00 AM</p>
-      </div>
-      <div class="schedule-status">
-        <span class="status upcoming">Upcoming</span>
-      </div>
-      <div class="schedule-actions">
-        <button class="btn-view">View Details</button>
-        <button class="btn-edit">Edit</button>
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">All Schedules</div>
+      <div class="card-subtitle">
+        Complete schedule overview for all cohorts and programs.
       </div>
     </div>
 
-    <div class="schedule-item">
-      <div class="schedule-info">
-        <h3>JavaScript Fundamentals</h3>
-        <p class="schedule-meta">Web Development 2024 • Group A • Room 102</p>
-        <p class="schedule-time">Wednesday, Jan 17, 2024 • 2:00 PM - 4:00 PM</p>
-      </div>
-      <div class="schedule-status">
-        <span class="status upcoming">Upcoming</span>
-      </div>
-      <div class="schedule-actions">
-        <button class="btn-view">View Details</button>
-        <button class="btn-edit">Edit</button>
-      </div>
-    </div>
+    <div class="table-wrap" [class.loading]="loading">
+      <table class="schedules-table" role="table" *ngIf="!loading; else skeleton">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Start Date and Time</th>
+            <th scope="col">End Date and Time</th>
+            <th scope="col">Cohort</th>
+            <th scope="col">Sub‑Group</th>
+            <th scope="col">Program</th>
+          </tr>
+        </thead>
 
-    <div class="schedule-item">
-      <div class="schedule-info">
-        <h3>Data Analysis with Python</h3>
-        <p class="schedule-meta">Data Science Bootcamp • Group B • Lab 201</p>
-        <p class="schedule-time">Friday, Mar 8, 2024 • 10:00 AM - 12:00 PM</p>
-      </div>
-      <div class="schedule-status">
-        <span class="status in-progress">In Progress</span>
-      </div>
-      <div class="schedule-actions">
-        <button class="btn-view">View Details</button>
-        <button class="btn-edit">Edit</button>
-      </div>
-    </div>
+        <tbody>
+          <tr *ngFor="let r of rows; trackBy: trackById"
+            (click)="openDetail(r, 'details')"
+            class="row-link"
+            tabindex="0"
+            role="button"
+            (keydown.enter)="openDetail(r, 'details')"
+            (keydown.space)="openDetail(r, 'details')">
+            <td class="cell-id">#{{ r.id }}</td>
+            <td>{{ fmt(r.startDate, r.startTime) }}</td>
+            <td>{{ fmt(r.endDate, r.endTime) }}</td>
+            <td>{{ r.cohort }}</td>
+            <td>{{ r.subGroup }}</td>
+            <td class="cell-program">
+              <!-- Link to program detail route; adjust to your actual route pattern -->
+              <a [routerLink]="['/programs', r.program.id]" class="program-link">
+                {{ r.program.name }}
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-    <div class="schedule-item">
-      <div class="schedule-info">
-        <h3>UX Research Methods</h3>
-        <p class="schedule-meta">UX/UI Design • Group C • Room 103</p>
-        <p class="schedule-time">Tuesday, May 7, 2024 • 1:00 PM - 3:00 PM</p>
-      </div>
-      <div class="schedule-status">
-        <span class="status upcoming">Upcoming</span>
-      </div>
-      <div class="schedule-actions">
-        <button class="btn-view">View Details</button>
-        <button class="btn-edit">Edit</button>
-      </div>
+      <ng-template #skeleton>
+        <div class="skeleton">
+          <div class="row" *ngFor="let i of [1,2,3,4,5]">
+            <span class="sk sk-id"></span>
+            <span class="sk sk-datetime"></span>
+            <span class="sk sk-datetime"></span>
+            <span class="sk sk-cohort"></span>
+            <span class="sk sk-subgroup"></span>
+            <span class="sk sk-program"></span>
+          </div>
+        </div>
+      </ng-template>
     </div>
   </div>
-
-  <button class="btn-add">Create New Schedule</button>
-</div>
+</section>

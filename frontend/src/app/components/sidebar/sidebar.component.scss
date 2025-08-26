@@ -1,4 +1,85 @@
-nav { padding: 1rem; border-right: 1px solid #e5e7eb; }
-ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem; }
-a { text-decoration: none; color: #111827; }
-a.active { font-weight: 600; }
+.sidebar {
+  /* normal */
+  flex: 0 0 280px;
+  width: 280px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+  padding: 16px 12px;
+  border-right: 1px solid var(--sidebar-border, var(--border));
+  background: var(--sidebar, var(--background));
+  color: var(--sidebar-foreground, var(--foreground));
+  transition: width .2s ease, flex-basis .2s ease, padding .2s ease;
+}
+
+.sidebar.is-collapsed {
+  flex-basis: 64px;
+  width: 64px;
+  padding-left: 8px; padding-right: 8px;
+}
+
+/* Group label hides when collapsed */
+.group-label {
+  font-size: 0.9375rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--muted-foreground);
+  margin: 4px 8px 12px;
+  transition: opacity .15s ease, margin .2s ease;
+}
+.sidebar.is-collapsed .group-label {
+  opacity: 0;
+  margin-top: -8px;
+  margin-bottom: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* Menu list */
+.menu-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.menu-item { margin: 0; }
+
+/* Button-style link */
+.menu-button {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+  padding: 10px 12px;
+  border-radius: calc(var(--radius, 10px) + 2px);
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background .15s ease, border-color .15s ease, color .15s ease, padding .2s ease, gap .2s ease;
+}
+
+/* hover/active */
+.menu-button:hover {
+  background: color-mix(in oklch, var(--sidebar-accent, var(--accent)) 60%, transparent);
+  border-color: var(--sidebar-border, var(--border));
+}
+.menu-button.is-active {
+  background: color-mix(in oklch, var(--sidebar-accent, var(--accent)) 85%, transparent);
+  border-color: var(--sidebar-border, var(--border));
+  font-weight: var(--font-weight-medium);
+}
+
+/* icon + label */
+.icon { display: inline-flex; align-items: center; justify-content: center; color: inherit; }
+.label { line-height: 1; color: inherit; white-space: nowrap; }
+
+/* collapsed mode: center icon, hide label smoothly */
+.sidebar.is-collapsed .menu-button {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  gap: 0;
+  padding: 10px 8px;
+}
+.sidebar.is-collapsed .menu-button .label {
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: opacity .15s ease;
+}

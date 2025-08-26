@@ -1,9 +1,53 @@
-<nav>
-  <ul>
-    <li><a routerLink="/users" routerLinkActive="active">Users</a></li>
-    <li><a routerLink="/cohorts" routerLinkActive="active">Cohorts</a></li>
-    <li><a routerLink="/schedules" routerLinkActive="active">Schedules</a></li>
-    <li><a routerLink="/programs" routerLinkActive="active">Programs</a></li>
-    <li><a routerLink="/chat" routerLinkActive="active">Chat</a></li>
-  </ul>
-</nav>
+<aside class="sidebar" [class.is-collapsed]="collapsed">
+  <div class="group">
+    <div class="group-label">Navigation</div>
+
+    <nav class="menu" aria-label="Primary">
+      <ul class="menu-list">
+        <li class="menu-item" *ngFor="let item of items">
+          <a
+            class="menu-button"
+            [routerLink]="item.link"
+            routerLinkActive="is-active"
+            #rla="routerLinkActive"
+            [attr.aria-current]="rla.isActive ? 'page' : null"
+          >
+            <span class="icon" [ngSwitch]="item.key" aria-hidden="true">
+              <!-- (same inline SVG icons as before) -->
+              <!-- Users -->
+              <svg *ngSwitchCase="'users'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <!-- Calendar -->
+              <svg *ngSwitchCase="'cohorts'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <!-- Clock -->
+              <svg *ngSwitchCase="'schedules'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <!-- BookOpen -->
+              <svg *ngSwitchCase="'programs'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 7v12a2 2 0 0 0 2 2h7V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+                <path d="M22 7v12a2 2 0 0 1-2 2h-7V7a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2z"/>
+              </svg>
+            </span>
+
+            <span class="label">{{ item.title }}</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</aside>
