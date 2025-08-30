@@ -1,6 +1,6 @@
 ---
 title: AI Schedule Organizer
-emoji: :)
+emoji: 📅
 colorFrom: purple
 colorTo: blue
 sdk: docker
