@@ -20,7 +20,7 @@ COPY . .
 
 # Build Angular frontend
 WORKDIR /app/frontend
-RUN npm install && npm run build --configuration production
+RUN npm install && npm run build -- --configuration production
 
 # Expose port (HF Spaces requires 7860)
 EXPOSE 7860
