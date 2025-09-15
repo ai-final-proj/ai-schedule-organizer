@@ -26,7 +26,19 @@ export DOTENV_FILE="$ENV_PATH"
 
 # Apply DB migrations (works for SQLite or external DB via DATABASE_URL)
 if command -v alembic >/dev/null 2>&1; then
-  alembic upgrade head || echo "[warn] Alembic migration failed; proceeding to start app" >&2
+  if ! alembic upgrade head; then
+    echo "[warn] Alembic migration failed; attempting fallback DB" >&2
+    if [ -n "$DATABASE_URL" ]; then
+      # Fallback to a local SQLite DB in /tmp when external DB is unreachable
+      export DATABASE_URL="sqlite:////tmp/ai_schedule.db"
+      printf "DATABASE_URL=%s\n" "$DATABASE_URL" >> "$ENV_PATH"
+      if ! alembic upgrade head; then
+        echo "[warn] Alembic migration failed on fallback as well; proceeding to start app" >&2
+      fi
+    else
+      echo "[warn] No DATABASE_URL set; using default app config" >&2
+    fi
+  fi
 fi
 
 exec "$@"

@@ -11,7 +11,12 @@ from .api import register_blueprints
 
 def create_app() -> Flask:
     ROOT = Path(__file__).resolve().parent.parent
-    ANGULAR_DIST = ROOT / "frontend" / "dist" / "ai-schedule-organizer-angular" / "browser"
+    # Angular build output path: newer Angular may emit to dist/<name>/, while SSR/browser setups use dist/<name>/browser
+    CANDIDATES = [
+        ROOT / "frontend" / "dist" / "ai-schedule-organizer-angular" / "browser",
+        ROOT / "frontend" / "dist" / "ai-schedule-organizer-angular",
+    ]
+    ANGULAR_DIST = next((p for p in CANDIDATES if p.exists()), CANDIDATES[0])
 
     app = Flask(
         __name__,
@@ -55,10 +60,10 @@ def create_app() -> Flask:
         if path.startswith("api/"):
             return jsonify({"error": "Not found"}), 404
         try:
-            file_path = ANGULAR_DIST / path
+            file_path = Path(app.static_folder) / path
             if file_path.is_file():
                 return send_from_directory(app.static_folder, path)
-            index = ANGULAR_DIST / "index.html"
+            index = Path(app.static_folder) / "index.html"
             if index.is_file():
                 return send_from_directory(app.static_folder, "index.html")
         except Exception:
