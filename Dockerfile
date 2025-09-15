@@ -20,13 +20,24 @@ COPY . .
 
 # Build Angular frontend
 WORKDIR /app/frontend
-RUN npm install && npm run build -- --configuration production
+# Use npm ci for reproducible installs in CI/Docker
+RUN npm ci && npm run build -- --configuration production
 
 # Expose port (HF Spaces requires 7860)
 EXPOSE 7860
 
 # Switch back to project root where app.py lives
 WORKDIR /app
+
+# Copy entrypoint that will export Hugging Face secrets into a .env file
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+ENV PYTHONUNBUFFERED=1 \
+    PORT=7860
+
+# Entrypoint writes .env from env vars and applies DB migrations before starting
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
 # Run Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:7860", "--timeout", "120", "--log-level", "debug", "app:app"]
