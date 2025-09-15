@@ -1,6 +1,9 @@
 from flask import Flask, jsonify, request, send_from_directory
 from pathlib import Path
+from backend import create_app
 import os
+
+app = create_app()
 
 # --- Paths ---
 ROOT = Path(__file__).resolve().parent  # root = AiScheduleOrganizer/
