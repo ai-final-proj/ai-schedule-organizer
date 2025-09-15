@@ -20,8 +20,9 @@ COPY . .
 
 # Build Angular frontend
 WORKDIR /app/frontend
-# Use npm ci for reproducible installs in CI/Docker
-RUN npm ci && npm run build -- --configuration production
+# Use npm ci if lockfile exists; otherwise fall back to npm install
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi \
+    && npm run build -- --configuration production
 
 # Expose port (HF Spaces requires 7860)
 EXPOSE 7860
