@@ -145,3 +145,28 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* Footer pagination */
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  color: var(--foreground);
+}
+.rows-per-page {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.pagination-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.pagination-controls button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

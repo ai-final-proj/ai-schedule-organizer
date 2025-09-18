@@ -1,12 +1,10 @@
 # Base image for Python backend
 FROM python:3.10-slim
 
-# Install Node.js + Angular CLI
-RUN apt-get update && apt-get install -y curl gnupg \
-    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g @angular/cli \
-    && rm -rf /var/lib/apt/lists/*
+# Build arg to optionally skip frontend build (use prebuilt dist)
+ARG SKIP_FRONTEND_BUILD=false
+
+# Note: Node.js will be installed later only if frontend build is enabled
 
 # Set working directory
 WORKDIR /app
@@ -18,11 +16,20 @@ RUN pip install --no-cache-dir -r requirements.txt gunicorn
 # Copy everything
 COPY . .
 
-# Build Angular frontend
-WORKDIR /app/frontend
-# Use npm ci if lockfile exists; otherwise fall back to npm install
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi \
-    && npm run build -- --configuration production
+# Optionally build Angular frontend inside the image
+RUN if [ "$SKIP_FRONTEND_BUILD" != "true" ]; then \
+      echo "[build] Installing Node.js and building Angular frontend" && \
+      apt-get update && apt-get install -y curl gnupg && \
+      curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+      apt-get install -y nodejs && \
+      npm install -g @angular/cli && \
+      cd /app/frontend && \
+      if [ -f package-lock.json ]; then npm ci --no-audit --no-fund --prefer-offline; else npm install --no-audit --no-fund --prefer-offline; fi && \
+      npm run build -- --configuration production && \
+      rm -rf /var/lib/apt/lists/*; \
+    else \
+      echo "[build] Skipping frontend build; using existing /app/frontend/dist if present"; \
+    fi
 
 # Expose port (HF Spaces requires 7860)
 EXPOSE 7860

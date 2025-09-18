@@ -52,5 +52,25 @@
         </div>
       </ng-template>
     </div>
+
+    <div class="table-footer" *ngIf="!loading">
+      <div class="rows-per-page">
+        <label for="cohorts-rpp">Rows per page</label>
+        <select id="cohorts-rpp" [value]="size" #rpp (change)="changeSize(rpp.value)">
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+
+      <div class="pagination-controls">
+        <button type="button" (click)="prevPage()" [disabled]="!hasPrev">Previous</button>
+        <span class="page-indicator">
+          Page {{ page }}<ng-container *ngIf="totalPages"> of {{ totalPages }}</ng-container>
+        </span>
+        <button type="button" (click)="nextPage()" [disabled]="!hasNext">Next</button>
+      </div>
+    </div>
   </div>
 </section>

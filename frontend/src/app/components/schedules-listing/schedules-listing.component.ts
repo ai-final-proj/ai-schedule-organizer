@@ -25,52 +25,25 @@ export class SchedulesListingComponent implements OnInit {
   loading = true;
   rows: ScheduleRow[] = [];
   selected: ScheduleDetailModel | null = null;
+  page = 1;
+  size = 100;
+  total: number | null = null;
 
   constructor(private router: Router) {}
 
-  ngOnInit() {
-    // TODO: replace with real fetch
-    // fetch('/api/schedules').then(r => r.json()).then((data: ScheduleRow[]) => { this.rows = data; this.loading = false; });
-    setTimeout(() => {
-      this.rows = [
-        {
-          id: 1,
-          startDate: '2024-08-21', startTime: '09:00',
-          endDate:   '2024-08-21', endTime:   '11:00',
-          cohort: 'Spring 2024', subGroup: 'Group A',
-          program: { id: 101, name: 'Data Science Bootcamp' }
-        },
-        {
-          id: 2,
-          startDate: '2024-08-21', startTime: '14:00',
-          endDate:   '2024-08-21', endTime:   '17:00',
-          cohort: 'Spring 2024', subGroup: 'Group B',
-          program: { id: 101, name: 'Data Science Bootcamp' }
-        },
-        {
-          id: 3,
-          startDate: '2024-08-22', startTime: '10:00',
-          endDate:   '2024-08-22', endTime:   '12:00',
-          cohort: 'Spring 2024', subGroup: 'Group A',
-          program: { id: 101, name: 'Data Science Bootcamp' }
-        },
-        {
-          id: 4,
-          startDate: '2024-08-23', startTime: '13:00',
-          endDate:   '2024-08-23', endTime:   '16:00',
-          cohort: 'Fall 2023', subGroup: 'All Groups',
-          program: { id: 202, name: 'Web Development' }
-        },
-        {
-          id: 5,
-          startDate: '2024-08-24', startTime: '15:00',
-          endDate:   '2024-08-24', endTime:   '16:30',
-          cohort: 'Summer 2024', subGroup: 'Group C',
-          program: { id: 303, name: 'UX/UI Design' }
-        },
-      ];
-      this.loading = false;
-    }, 350);
+  ngOnInit() { this.load(); }
+
+  load() {
+    this.loading = true;
+    const url = `http://localhost:7860/api/schedules?page=${this.page}&size=${this.size}`;
+    fetch(url)
+      .then(r => r.json())
+      .then((data: any) => {
+        if (Array.isArray(data)) { this.rows = data as ScheduleRow[]; this.total = null; }
+        else if (data && Array.isArray(data.items)) { this.rows = data.items as ScheduleRow[]; this.total = typeof data.total === 'number' ? data.total : null; }
+        else { this.rows = []; this.total = null; }
+      })
+      .finally(() => this.loading = false);
   }
 
   trackById(_: number, r: ScheduleRow) { return r.id; }
@@ -86,4 +59,12 @@ export class SchedulesListingComponent implements OnInit {
       state: { schedule: r }
     });
   }
+
+  // Pagination helpers
+  get hasPrev() { return this.page > 1; }
+  get hasNext() { return this.total == null ? this.rows.length === this.size : this.page * this.size < this.total; }
+  get totalPages(): number | null { return this.total == null ? null : Math.max(1, Math.ceil(this.total / this.size)); }
+  nextPage() { if (!this.hasNext) return; this.page++; this.load(); }
+  prevPage() { if (!this.hasPrev) return; this.page--; this.load(); }
+  changeSize(val: string | number) { const n = Number(val); if (!Number.isFinite(n) || n <= 0) return; this.size = n; this.page = 1; this.load(); }
 }

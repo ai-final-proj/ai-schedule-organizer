@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/bash
 set -e
 
 # Generate a .env file from environment variables (e.g., Hugging Face Secrets)
