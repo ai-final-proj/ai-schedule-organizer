@@ -6,9 +6,9 @@ interface UserRow {
   email: string;
   role?: string;
   role_id?: number;
-  status?: string;    // backend: 'active' | 'inactive'
-  cohort?: string;    // e.g., "Spring 2024" or "N/A"
-  subgroup?: string;  // e.g., "A1", "Evening", or "N/A"
+  status?: string; // backend: 'active' | 'inactive'
+  cohort?: string; // e.g., "Spring 2024" or "N/A"
+  subgroup?: string; // e.g., "A1", "Evening", or "N/A"
 }
 
 @Component({
@@ -16,7 +16,7 @@ interface UserRow {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './users-listing.component.html',
-  styleUrls: ['./users-listing.component.scss']
+  styleUrls: ['./users-listing.component.scss'],
 })
 export class UsersListingComponent implements OnInit {
   loading = true;
@@ -33,9 +33,9 @@ export class UsersListingComponent implements OnInit {
 
   load() {
     this.loading = true;
-    const url = `http://localhost:7860/api/users?page=${this.page}&size=${this.size}`;
+    const url = `/api/users?page=${this.page}&size=${this.size}`;
     fetch(url)
-      .then(r => r.json())
+      .then((r) => r.json())
       .then((data: any) => {
         if (Array.isArray(data)) {
           this.rows = data as UserRow[];
@@ -48,11 +48,13 @@ export class UsersListingComponent implements OnInit {
           this.total = null;
         }
       })
-      .finally(() => this.loading = false);
+      .finally(() => (this.loading = false));
   }
 
   // Computed pagination helpers
-  get hasPrev() { return this.page > 1; }
+  get hasPrev() {
+    return this.page > 1;
+  }
   get hasNext() {
     if (this.total == null) return this.rows.length === this.size; // unknown total
     return this.page * this.size < this.total;
@@ -63,8 +65,16 @@ export class UsersListingComponent implements OnInit {
   }
 
   // UI event handlers
-  nextPage() { if (!this.hasNext) return; this.page++; this.load(); }
-  prevPage() { if (!this.hasPrev) return; this.page--; this.load(); }
+  nextPage() {
+    if (!this.hasNext) return;
+    this.page++;
+    this.load();
+  }
+  prevPage() {
+    if (!this.hasPrev) return;
+    this.page--;
+    this.load();
+  }
   changeSize(val: string | number) {
     const n = Number(val);
     if (!Number.isFinite(n) || n <= 0) return;
@@ -73,5 +83,7 @@ export class UsersListingComponent implements OnInit {
     this.load();
   }
 
-  trackByEmail(_: number, r: UserRow) { return r.email; }
+  trackByEmail(_: number, r: UserRow) {
+    return r.email;
+  }
 }
