@@ -24,6 +24,13 @@ done
 # Export path so the app can load it explicitly if needed
 export DOTENV_FILE="$ENV_PATH"
 
+# Load .env file if DATABASE_URL is not set
+if [ -z "$DATABASE_URL" ] && [ -f "/app/.env" ]; then
+  echo "[info] DATABASE_URL not set, loading from .env file..."
+  source /app/.env
+  export DATABASE_URL
+fi
+
 # Apply PostgreSQL database migrations
 if command -v alembic >/dev/null 2>&1; then
   echo "[info] Starting PostgreSQL database migration process..."
@@ -31,8 +38,16 @@ if command -v alembic >/dev/null 2>&1; then
   # Validate DATABASE_URL is provided
   if [ -z "$DATABASE_URL" ]; then
     echo "[error] DATABASE_URL environment variable is required for PostgreSQL connection" >&2
-    echo "[error] Please set DATABASE_URL in your Hugging Face Space secrets" >&2
-    echo "[error] Example: postgresql+psycopg://username:password@host:port/database" >&2
+    echo "[error]" >&2
+    echo "[error] To fix this in Hugging Face Spaces:" >&2
+    echo "[error] 1. Go to your Space settings" >&2
+    echo "[error] 2. Click on 'Variables and secrets'" >&2
+    echo "[error] 3. Add a new secret named 'DATABASE_URL'" >&2
+    echo "[error] 4. Set the value to your PostgreSQL connection string" >&2
+    echo "[error] 5. Example: postgresql+psycopg://username:password@host:port/database" >&2
+    echo "[error]" >&2
+    echo "[error] Current environment variables:" >&2
+    env | grep -E "(DATABASE|POSTGRES|DB_)" || echo "  No database-related environment variables found" >&2
     exit 1
   fi
   
