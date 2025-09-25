@@ -120,3 +120,15 @@ alembic upgrade head
 # Start the application
 python app.py
 ```
+
+## 🚀 **Hugging Face Spaces Deployment**
+
+### **Important Notes for HF Spaces:**
+
+-   **Network Restrictions**: Hugging Face Spaces may block outbound connections to PostgreSQL port 5432
+-   **Solutions**:
+    1. **Request Port Access**: Contact HF support to open port 5432 for your Space
+    2. **Use Privileged Port**: Configure PostgreSQL to use port 80 or 443 (below 1024)
+    3. **Local PostgreSQL**: Deploy PostgreSQL within your Space using Docker Compose
+-   **Environment Variables**: Set `DATABASE_URL` as a secret in your Space settings
+-   **Build Time**: The Docker build includes netcat for connection checks and will gracefully handle connection timeouts
