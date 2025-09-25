@@ -22,7 +22,7 @@ Flask backend + Angular frontend served via Gunicorn inside Docker with PostgreS
 The easiest way to run the application:
 
 ```shell
-# Start PostgreSQL and the application
+# Start PostgreSQL, pgAdmin, and the application
 docker-compose up -d
 
 # View logs
@@ -31,6 +31,13 @@ docker-compose logs -f
 # Stop the application
 docker-compose down
 ```
+
+**Access Points:**
+-   Frontend: http://localhost:7860
+-   API Documentation: http://localhost:7860/api/docs
+-   Health Check: http://localhost:7860/api/hello
+-   pgAdmin: http://localhost:8080 (admin@example.com / admin)
+-   PostgreSQL: localhost:5432 (postgres / postgres)
 
 ## Manual Docker Setup
 
