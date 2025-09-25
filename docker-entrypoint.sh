@@ -36,52 +36,28 @@ if command -v alembic >/dev/null 2>&1; then
   
   # Wait for PostgreSQL to be ready
   echo "[info] Detected PostgreSQL connection, waiting for database to be ready..."
-  echo "[debug] DATABASE_URL format: ${DATABASE_URL:0:50}..." # Show first 50 chars for debugging
-  
-  # Extract connection details from DATABASE_URL with improved parsing
-  # Handle various PostgreSQL URL formats: postgresql://user:pass@host:port/db
-  DB_HOST=$(echo "$DATABASE_URL" | sed -n 's/.*@\([^:/]*\)[:/].*/\1/p')
+  # Extract connection details from DATABASE_URL
+  DB_HOST=$(echo "$DATABASE_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
   DB_PORT=$(echo "$DATABASE_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
   
-  # Fallback: if no port found, try to extract from after the host
-  if [ -z "$DB_PORT" ]; then
-    DB_PORT=$(echo "$DATABASE_URL" | sed -n 's/.*@[^:]*:\([0-9]*\).*/\1/p')
-  fi
-  
-  # Default PostgreSQL port if still not found
-  if [ -z "$DB_PORT" ]; then
-    DB_PORT="5432"
-  fi
-  
-  # If no host found, skip the connection check (might be a different format)
-  if [ -n "$DB_HOST" ] && [ "$DB_HOST" != "localhost" ] && [ "$DB_HOST" != "127.0.0.1" ]; then
+  if [ -n "$DB_HOST" ] && [ -n "$DB_PORT" ]; then
     echo "[info] Waiting for PostgreSQL at $DB_HOST:$DB_PORT..."
-    
-    # Try to use netcat if available, otherwise skip connection check
-    if command -v nc >/dev/null 2>&1; then
-      timeout=30  # Reduced timeout for faster startup
-      while [ $timeout -gt 0 ]; do
-        if nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; then
-          echo "[info] PostgreSQL is ready!"
-          break
-        fi
-        echo "[info] Waiting for PostgreSQL... ($timeout seconds remaining)"
-        sleep 2
-        timeout=$((timeout - 2))
-      done
-      
-      if [ $timeout -le 0 ]; then
-        echo "[warn] PostgreSQL connection timeout after 30 seconds" >&2
-        echo "[warn] This might be due to Hugging Face Spaces network restrictions" >&2
-        echo "[info] Proceeding with migration attempt anyway..." >&2
+    timeout=60
+    while [ $timeout -gt 0 ]; do
+      if nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; then
+        echo "[info] PostgreSQL is ready!"
+        break
       fi
-    else
-      echo "[warn] netcat not available, skipping connection check"
-      echo "[info] Proceeding with migration attempt..."
+      echo "[info] Waiting for PostgreSQL... ($timeout seconds remaining)"
+      sleep 2
+      timeout=$((timeout - 2))
+    done
+    
+    if [ $timeout -le 0 ]; then
+      echo "[error] PostgreSQL connection timeout after 60 seconds" >&2
+      echo "[error] Please ensure PostgreSQL is running and accessible" >&2
+      exit 1
     fi
-  else
-    echo "[info] Skipping PostgreSQL connection check (host: $DB_HOST, port: $DB_PORT)"
-    echo "[info] Proceeding with migration attempt..."
   fi
   
   echo "[info] Running database migrations..."
@@ -92,8 +68,7 @@ if command -v alembic >/dev/null 2>&1; then
     echo "  - Missing database or schema" >&2
     echo "  - Permission issues" >&2
     echo "  - Invalid DATABASE_URL format" >&2
-    echo "[info] Attempting to continue without migrations..." >&2
-    echo "[warn] Application may not work correctly without proper database setup" >&2
+    exit 1
   else
     echo "[info] Database migrations completed successfully!"
   fi
