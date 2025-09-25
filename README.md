@@ -33,6 +33,7 @@ docker-compose down
 ```
 
 **Access Points:**
+
 -   Frontend: http://localhost:7860
 -   API Documentation: http://localhost:7860/api/docs
 -   Health Check: http://localhost:7860/api/hello
