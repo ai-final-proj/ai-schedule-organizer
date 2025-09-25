@@ -131,5 +131,6 @@ python app.py
 -   **Required Secrets**:
 -   `DATABASE_URL`: PostgreSQL connection string (e.g., `postgresql+psycopg://user:pass@host:port/db`)
 -   `SECRET_KEY`: Flask secret key for sessions
+-   **Setting Secrets**: Go to Space Settings → Variables and secrets → Add new secret
 -   **Network**: The Docker build includes netcat for database connection checks
 -   **Fallback**: If `DATABASE_URL` is not set, the app will show a clear error message
