@@ -9,6 +9,10 @@ if _dotenv_file and os.path.exists(_dotenv_file):
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev")
-    # Use DATABASE_URL if provided; otherwise default to a local SQLite file for dev
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///ai_schedule.db")
+    # PostgreSQL database connection - DATABASE_URL is required
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+# Validate DATABASE_URL at module import time
+if not Config.SQLALCHEMY_DATABASE_URI:
+    raise ValueError("DATABASE_URL environment variable is required for PostgreSQL connection")

@@ -1,4 +1,4 @@
-from sqlalchemy import Enum
+from sqlalchemy import DateTime, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..db import db
 from .enums import UserStatus
@@ -6,6 +6,8 @@ from .enums import UserStatus
 class User(db.Model):
     __tablename__ = "user"
     id: Mapped[int] = mapped_column(primary_key=True)
+    created_at: Mapped[DateTime] = mapped_column(DateTime, server_default=db.func.now())
+    updated_at: Mapped[DateTime] = mapped_column(DateTime, server_default=db.func.now(), onupdate=db.func.now())
     name: Mapped[str]
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
     role_id: Mapped[int] = mapped_column(db.ForeignKey("system_role.id"), nullable=False)

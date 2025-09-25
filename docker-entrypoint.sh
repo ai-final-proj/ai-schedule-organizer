@@ -24,21 +24,57 @@ done
 # Export path so the app can load it explicitly if needed
 export DOTENV_FILE="$ENV_PATH"
 
-# Apply DB migrations (works for SQLite or external DB via DATABASE_URL)
+# Apply PostgreSQL database migrations
 if command -v alembic >/dev/null 2>&1; then
-  if ! alembic upgrade head; then
-    echo "[warn] Alembic migration failed; attempting fallback DB" >&2
-    if [ -n "$DATABASE_URL" ]; then
-      # Fallback to a local SQLite DB in /tmp when external DB is unreachable
-      export DATABASE_URL="sqlite:////tmp/ai_schedule.db"
-      printf "DATABASE_URL=%s\n" "$DATABASE_URL" >> "$ENV_PATH"
-      if ! alembic upgrade head; then
-        echo "[warn] Alembic migration failed on fallback as well; proceeding to start app" >&2
+  echo "[info] Starting PostgreSQL database migration process..."
+  
+  # Validate DATABASE_URL is provided
+  if [ -z "$DATABASE_URL" ]; then
+    echo "[error] DATABASE_URL environment variable is required for PostgreSQL connection" >&2
+    exit 1
+  fi
+  
+  # Wait for PostgreSQL to be ready
+  echo "[info] Detected PostgreSQL connection, waiting for database to be ready..."
+  # Extract connection details from DATABASE_URL
+  DB_HOST=$(echo "$DATABASE_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
+  DB_PORT=$(echo "$DATABASE_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
+  
+  if [ -n "$DB_HOST" ] && [ -n "$DB_PORT" ]; then
+    echo "[info] Waiting for PostgreSQL at $DB_HOST:$DB_PORT..."
+    timeout=60
+    while [ $timeout -gt 0 ]; do
+      if nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; then
+        echo "[info] PostgreSQL is ready!"
+        break
       fi
-    else
-      echo "[warn] No DATABASE_URL set; using default app config" >&2
+      echo "[info] Waiting for PostgreSQL... ($timeout seconds remaining)"
+      sleep 2
+      timeout=$((timeout - 2))
+    done
+    
+    if [ $timeout -le 0 ]; then
+      echo "[error] PostgreSQL connection timeout after 60 seconds" >&2
+      echo "[error] Please ensure PostgreSQL is running and accessible" >&2
+      exit 1
     fi
   fi
+  
+  echo "[info] Running database migrations..."
+  if ! alembic upgrade head; then
+    echo "[error] Alembic migration failed!" >&2
+    echo "[error] This might be due to:" >&2
+    echo "  - Database connection issues" >&2
+    echo "  - Missing database or schema" >&2
+    echo "  - Permission issues" >&2
+    echo "  - Invalid DATABASE_URL format" >&2
+    exit 1
+  else
+    echo "[info] Database migrations completed successfully!"
+  fi
+else
+  echo "[error] Alembic not found - cannot run database migrations" >&2
+  exit 1
 fi
 
 exec "$@"
