@@ -31,6 +31,8 @@ if command -v alembic >/dev/null 2>&1; then
   # Validate DATABASE_URL is provided
   if [ -z "$DATABASE_URL" ]; then
     echo "[error] DATABASE_URL environment variable is required for PostgreSQL connection" >&2
+    echo "[error] Please set DATABASE_URL in your Hugging Face Space secrets" >&2
+    echo "[error] Example: postgresql+psycopg://username:password@host:port/database" >&2
     exit 1
   fi
   

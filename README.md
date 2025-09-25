@@ -128,4 +128,8 @@ python app.py
 -   **Frontend API Calls**: Use `docker.internal.host:7860` instead of `localhost:7860` for API calls
 -   **Database Connection**: Ensure your `DATABASE_URL` points to an accessible PostgreSQL instance
 -   **Environment Variables**: Set `DATABASE_URL` as a secret in your Space settings
+-   **Required Secrets**:
+-   `DATABASE_URL`: PostgreSQL connection string (e.g., `postgresql+psycopg://user:pass@host:port/db`)
+-   `SECRET_KEY`: Flask secret key for sessions
 -   **Network**: The Docker build includes netcat for database connection checks
+-   **Fallback**: If `DATABASE_URL` is not set, the app will show a clear error message
