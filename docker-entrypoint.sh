@@ -35,6 +35,12 @@ fi
 if command -v alembic >/dev/null 2>&1; then
   echo "[info] Starting PostgreSQL database migration process..."
   
+  # Debug: Show what DATABASE_URL contains
+  echo "[debug] DATABASE_URL value: '${DATABASE_URL}'"
+  echo "[debug] DATABASE_URL length: ${#DATABASE_URL}"
+  echo "[debug] All environment variables containing DATABASE:"
+  env | grep -i database || echo "  No DATABASE variables found"
+  
   # Validate DATABASE_URL is provided
   if [ -z "$DATABASE_URL" ]; then
     echo "[error] DATABASE_URL environment variable is required for PostgreSQL connection" >&2
