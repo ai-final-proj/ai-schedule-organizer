@@ -10,35 +10,35 @@ pinned: false
 
 # AI Schedule Organizer
 
-Flask backend + Angular frontend served via Gunicorn inside Docker with PostgreSQL database.
+Flask backend + Angular frontend served via Gunicorn inside Docker. The app targets a managed Postgres (Neon) by default and no longer runs Alembic migrations in the container. A full schema + seed script lives at `backend/database/schema_seed.sql` for manual initialization.
 
 ## Prerequisites
 
 -   Docker and Docker Compose installed
 -   PostgreSQL database (local or remote)
 
-## Quick Start with Docker Compose
+## Quick Start
 
-The easiest way to run the application:
+Run the application container (recommended to pass your own `DATABASE_URL`):
 
 ```shell
-# Start PostgreSQL, pgAdmin, and the application
-docker-compose up -d
+docker build -t ai-schedule-organizer .
 
-# View logs
-docker-compose logs -f
-
-# Stop the application
-docker-compose down
+docker run -d --name ai_schedule_container \
+  -p 7860:7860 \
+  -e DATABASE_URL="postgresql+psycopg://<user>:<pass>@<host>:<port>/<db>?sslmode=require" \
+  -e SECRET_KEY=dev \
+  -e PORT=7860 \
+  ai-schedule-organizer:latest
 ```
+
+If `DATABASE_URL` is omitted, the app defaults to the Neon DSN baked into the image. Overriding via env is recommended for your deployment.
 
 **Access Points:**
 
 -   Frontend: http://localhost:7860
 -   API Documentation: http://localhost:7860/api/docs
 -   Health Check: http://localhost:7860/api/hello
--   pgAdmin: http://localhost:8080 (admin@example.com / admin)
--   PostgreSQL: localhost:5432 (postgres / postgres)
 
 ## Manual Docker Setup
 
@@ -63,11 +63,15 @@ docker build -t ai-schedule-organizer . --build-arg SKIP_FRONTEND_BUILD=true
 
 ### 3. Run with PostgreSQL
 
+Managed Postgres (e.g., Neon): pass your `DATABASE_URL` as shown in Quick Start.
+
+Local Postgres (via Docker or installed):
+
 ```shell
 # Stop any existing container
 docker rm -f ai_schedule_container 2>/dev/null || true
 
-# Run the application
+# Run the application pointing to local DB (from host)
 docker run -d --name ai_schedule_container \
   -p 7860:7860 \
   -e DATABASE_URL="postgresql+psycopg://postgres:postgres@host.docker.internal:5432/ai_schedule_organizer" \
@@ -76,32 +80,42 @@ docker run -d --name ai_schedule_container \
   ai-schedule-organizer:latest
 ```
 
-### 4. Run with Local PostgreSQL
+### 4. Optional: Local Postgres with Docker Compose
 
-If you have PostgreSQL running locally:
+`docker-compose.yml` starts only Postgres and pgAdmin (no app service). Use this if you want a local database:
 
 ```shell
+docker-compose up -d
+
+# Initialize schema + sample data into local DB
+psql "postgresql://postgres:postgres@localhost:5432/ai_schedule_organizer" \
+  -f backend/database/schema_seed.sql
+
+# Then run the app container pointing at local DB
 docker run -d --name ai_schedule_container \
   -p 7860:7860 \
-  -e DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/ai_schedule_organizer" \
+  -e DATABASE_URL="postgresql+psycopg://postgres:postgres@host.docker.internal:5432/ai_schedule_organizer" \
   -e SECRET_KEY=dev \
-  -e PORT=7860 \
-  --network host \
   ai-schedule-organizer:latest
 ```
 
 ## Environment Variables
 
--   `DATABASE_URL`: PostgreSQL connection string (required)
+-   `DATABASE_URL`: PostgreSQL connection string. If not provided, defaults to the preconfigured Neon DSN.
 -   `SECRET_KEY`: Flask secret key (default: "dev")
 -   `PORT`: Application port (default: 7860)
 
 ## Database Setup
 
-The application uses Alembic for database migrations. Migrations run automatically on startup and include:
+The container does not run migrations. To initialize a database (local or managed), apply the SQL script:
 
--   Schema creation with proper ENUM types
--   Seed data with 5 roles, 2 programs, 2 cohorts, 110 users, and 20 periods
+```shell
+# Example: local Postgres
+psql "postgresql://postgres:postgres@localhost:5432/ai_schedule_organizer" \
+  -f backend/database/schema_seed.sql
+```
+
+This creates the schema (including ENUMs) and seeds: roles, programs, cohorts, ~110 users, and 20 periods.
 
 ## Access the Application
 
@@ -122,8 +136,8 @@ cd frontend && npm install && cd ..
 export DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/ai_schedule_organizer"
 export SECRET_KEY="dev"
 
-# Run migrations
-alembic upgrade head
+# Initialize DB schema/data once (no migrations run by the app)
+psql "$DATABASE_URL" -f backend/database/schema_seed.sql
 
 # Start the application
 python app.py
@@ -131,14 +145,8 @@ python app.py
 
 ## 🚀 **Hugging Face Spaces Deployment**
 
-### **Important Notes for HF Spaces:**
+### **Notes for HF Spaces:**
 
--   **Frontend API Calls**: Use `docker.internal.host:7860` instead of `localhost:7860` for API calls
--   **Database Connection**: Ensure your `DATABASE_URL` points to an accessible PostgreSQL instance
--   **Environment Variables**: Set `DATABASE_URL` as a secret in your Space settings
--   **Required Secrets**:
--   `DATABASE_URL`: PostgreSQL connection string (e.g., `postgresql+psycopg://user:pass@host:port/db`)
--   `SECRET_KEY`: Flask secret key for sessions
--   **Setting Secrets**: Go to Space Settings → Variables and secrets → Add new secret
--   **Network**: The Docker build includes netcat for database connection checks
--   **Fallback**: If `DATABASE_URL` is not set, the app will show a clear error message
+-   Set `DATABASE_URL` as a secret (recommended). If absent, the container defaults to the preconfigured Neon DSN.
+-   Set `SECRET_KEY` as a secret.
+-   The app listens on port `7860`. Ensure the frontend targets the container host/port (avoid `localhost` in some setups).

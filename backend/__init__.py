@@ -5,7 +5,7 @@ from flask_cors import CORS
 from flask_smorest import Api
 
 from .config import Config
-from .db import db, init_alembic
+from .db import db
 from .errors import register_error_handlers
 from .api import register_blueprints
 
@@ -36,7 +36,6 @@ def create_app() -> Flask:
     api = Api(app)
 
     db.init_app(app)
-    init_alembic(app)
 
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 

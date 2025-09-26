@@ -1,24 +1,10 @@
 #!/bin/bash
 set -e
 
-# Start PostgreSQL service
-echo "[info] Starting PostgreSQL service..."
-service postgresql start
-
-# Wait for PostgreSQL to be ready
-echo "[info] Waiting for PostgreSQL to be ready..."
-sleep 5
-
-# Create database and user if they don't exist
-echo "[info] Setting up PostgreSQL database..."
-sudo -u postgres psql -c "CREATE DATABASE ai_schedule_organizer;" 2>/dev/null || echo "[info] Database already exists"
-sudo -u postgres psql -c "CREATE USER postgres WITH PASSWORD 'postgres';" 2>/dev/null || echo "[info] User already exists"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ai_schedule_organizer TO postgres;" 2>/dev/null || echo "[info] Privileges already granted"
-
-# Set default DATABASE_URL if not provided
+# Ensure DATABASE_URL is available; default to Neon if missing
 if [ -z "$DATABASE_URL" ]; then
-  export DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/ai_schedule_organizer"
-  echo "[info] Using default DATABASE_URL: $DATABASE_URL"
+  export DATABASE_URL="postgresql+psycopg://neondb_owner:npg_0TbRIMg4nqQo@ep-green-truth-adedoaj5-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+  echo "[info] DATABASE_URL not provided; defaulting to Neon."
 fi
 
 # Generate a .env file from environment variables (e.g., Hugging Face Secrets)
@@ -43,58 +29,5 @@ done
 
 # Export path so the app can load it explicitly if needed
 export DOTENV_FILE="$ENV_PATH"
-
-# Load .env file if DATABASE_URL is not set
-if [ -z "$DATABASE_URL" ] && [ -f "/app/.env" ]; then
-  echo "[info] DATABASE_URL not set, loading from .env file..."
-  source /app/.env
-  export DATABASE_URL
-fi
-
-# Apply PostgreSQL database migrations
-if command -v alembic >/dev/null 2>&1; then
-  echo "[info] Starting PostgreSQL database migration process..."
-  
-  # Debug: Show what DATABASE_URL contains
-  echo "[debug] DATABASE_URL value: '${DATABASE_URL}'"
-  echo "[debug] DATABASE_URL length: ${#DATABASE_URL}"
-  echo "[debug] All environment variables containing DATABASE:"
-  env | grep -i database || echo "  No DATABASE variables found"
-  
-  # Validate DATABASE_URL is provided
-  if [ -z "$DATABASE_URL" ]; then
-    echo "[error] DATABASE_URL environment variable is required for PostgreSQL connection" >&2
-    echo "[error]" >&2
-    echo "[error] To fix this in Hugging Face Spaces:" >&2
-    echo "[error] 1. Go to your Space settings" >&2
-    echo "[error] 2. Click on 'Variables and secrets'" >&2
-    echo "[error] 3. Add a new secret named 'DATABASE_URL'" >&2
-    echo "[error] 4. Set the value to your PostgreSQL connection string" >&2
-    echo "[error] 5. Example: postgresql+psycopg://username:password@host:port/database" >&2
-    echo "[error]" >&2
-    echo "[error] Current environment variables:" >&2
-    env | grep -E "(DATABASE|POSTGRES|DB_)" || echo "  No database-related environment variables found" >&2
-    exit 1
-  fi
-  
-  # PostgreSQL is already running locally, no need to check connection
-  echo "[info] Using local PostgreSQL instance"
-  
-  echo "[info] Running database migrations..."
-  if ! alembic upgrade head; then
-    echo "[error] Alembic migration failed!" >&2
-    echo "[error] This might be due to:" >&2
-    echo "  - Database connection issues" >&2
-    echo "  - Missing database or schema" >&2
-    echo "  - Permission issues" >&2
-    echo "  - Invalid DATABASE_URL format" >&2
-    exit 1
-  else
-    echo "[info] Database migrations completed successfully!"
-  fi
-else
-  echo "[error] Alembic not found - cannot run database migrations" >&2
-  exit 1
-fi
 
 exec "$@"

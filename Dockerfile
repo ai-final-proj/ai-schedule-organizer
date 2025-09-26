@@ -9,10 +9,9 @@ ARG SKIP_FRONTEND_BUILD=false
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies including PostgreSQL and netcat
+# (Optional) system utils; Postgres is not required when using Neon
 RUN apt-get update && apt-get install -y \
-    postgresql postgresql-contrib \
-    netcat-openbsd \
+    ca-certificates curl gnupg \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Python requirements
@@ -25,7 +24,6 @@ COPY . .
 # Optionally build Angular frontend inside the image
 RUN if [ "$SKIP_FRONTEND_BUILD" != "true" ]; then \
       echo "[build] Installing Node.js and building Angular frontend" && \
-      apt-get update && apt-get install -y curl gnupg && \
       curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
       apt-get install -y nodejs && \
       npm install -g @angular/cli && \
@@ -50,7 +48,7 @@ RUN chmod +x /app/docker-entrypoint.sh
 ENV PYTHONUNBUFFERED=1 \
     PORT=7860
 
-# Entrypoint writes .env from env vars and applies DB migrations before starting
+# Entrypoint writes .env from env vars before starting
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
 # Run Gunicorn
