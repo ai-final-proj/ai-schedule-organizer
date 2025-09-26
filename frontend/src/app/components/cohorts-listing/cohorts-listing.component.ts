@@ -29,9 +29,12 @@ export class CohortsListingComponent implements OnInit {
 
   load() {
     this.loading = true;
-    const url = `/api/cohorts?page=${this.page}&size=${this.size}`;
+    const url = `/api/cohorts/?page=${this.page}&size=${this.size}`;
     fetch(url)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) console.error('GET', url, '->', r.status, r.statusText);
+        return r.json();
+      })
       .then((data: any) => {
         let items: any[] = [];
         if (Array.isArray(data)) {
@@ -63,6 +66,11 @@ export class CohortsListingComponent implements OnInit {
           };
           return row;
         });
+      })
+      .catch((err) => {
+        console.error('Fetch cohorts failed:', url, err);
+        this.rows = [];
+        this.total = null;
       })
       .finally(() => (this.loading = false));
   }

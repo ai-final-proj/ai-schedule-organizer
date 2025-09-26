@@ -27,9 +27,12 @@ export class ProgramsListingComponent implements OnInit {
 
   load() {
     this.loading = true;
-    const url = `/api/programs?page=${this.page}&size=${this.size}`;
+    const url = `/api/programs/?page=${this.page}&size=${this.size}`;
     fetch(url)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) console.error('GET', url, '->', r.status, r.statusText);
+        return r.json();
+      })
       .then((data: any) => {
         if (Array.isArray(data)) {
           this.rows = data as ProgramRow[];
@@ -41,6 +44,11 @@ export class ProgramsListingComponent implements OnInit {
           this.rows = [];
           this.total = null;
         }
+      })
+      .catch((err) => {
+        console.error('Fetch programs failed:', url, err);
+        this.rows = [];
+        this.total = null;
       })
       .finally(() => (this.loading = false));
   }

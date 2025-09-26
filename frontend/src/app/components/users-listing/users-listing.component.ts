@@ -33,9 +33,12 @@ export class UsersListingComponent implements OnInit {
 
   load() {
     this.loading = true;
-    const url = `/api/users?page=${this.page}&size=${this.size}`;
+    const url = `/api/users/?page=${this.page}&size=${this.size}`;
     fetch(url)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) console.error('GET', url, '->', r.status, r.statusText);
+        return r.json();
+      })
       .then((data: any) => {
         if (Array.isArray(data)) {
           this.rows = data as UserRow[];
@@ -47,6 +50,11 @@ export class UsersListingComponent implements OnInit {
           this.rows = [];
           this.total = null;
         }
+      })
+      .catch((err) => {
+        console.error('Fetch users failed:', url, err);
+        this.rows = [];
+        this.total = null;
       })
       .finally(() => (this.loading = false));
   }
