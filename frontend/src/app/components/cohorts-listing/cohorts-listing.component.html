@@ -15,6 +15,7 @@
         <thead>
           <tr>
             <th scope="col">Cohort Name</th>
+            <th scope="col">Description</th>
             <th scope="col">Subgroups</th>
             <th scope="col">Status</th>
           </tr>
@@ -23,9 +24,14 @@
         <tbody>
           <tr *ngFor="let r of rows; trackBy: trackByName">
             <td class="cell-name">{{ r.name }}</td>
+            <td class="cell-desc">{{ r.description || '—' }}</td>
             <td class="cell-subgroups">
               <ng-container *ngIf="r.subgroups.length; else na">
-                {{ r.subgroups.join(', ') }}
+                <span *ngIf="r.subgroups.length === 1; else many"
+                      [title]="r.subgroups[0]">{{ r.subgroups[0] }}</span>
+                <ng-template #many>
+                  <span [title]="r.subgroups.join(', ')">{{ r.subgroups.length }} subgroups</span>
+                </ng-template>
               </ng-container>
               <ng-template #na>—</ng-template>
             </td>
@@ -46,6 +52,7 @@
         <div class="skeleton">
           <div class="row" *ngFor="let i of [1,2,3,4]">
             <span class="sk sk-name"></span>
+            <span class="sk sk-desc"></span>
             <span class="sk sk-subgroups"></span>
             <span class="sk sk-status"></span>
           </div>

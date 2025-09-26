@@ -26,7 +26,7 @@ export class SchedulesListingComponent implements OnInit {
   rows: ScheduleRow[] = [];
   selected: ScheduleDetailModel | null = null;
   page = 1;
-  size = 100;
+  size = 20;
   total: number | null = null;
 
   constructor(private router: Router) {}

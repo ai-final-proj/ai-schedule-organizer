@@ -24,7 +24,7 @@ export class UsersListingComponent implements OnInit {
 
   // Pagination state
   page = 1;
-  size = 100;
+  size = 20;
   total: number | null = null; // backend currently returns array only
 
   ngOnInit() {

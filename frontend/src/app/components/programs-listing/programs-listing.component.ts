@@ -18,7 +18,7 @@ export class ProgramsListingComponent implements OnInit {
   loading = true;
   rows: ProgramRow[] = [];
   page = 1;
-  size = 100;
+  size = 20;
   total: number | null = null;
 
   ngOnInit() {

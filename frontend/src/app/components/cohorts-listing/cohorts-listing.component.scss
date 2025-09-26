@@ -50,6 +50,7 @@
   tbody tr:last-child td { border-bottom: none; }
 
   .cell-name { font-weight: var(--font-weight-medium); }
+  .cell-desc { color: var(--muted-foreground); }
   .cell-subgroups { color: color-mix(in oklch, var(--foreground) 85%, transparent); }
 }
 
@@ -83,7 +84,7 @@
 .skeleton { display: grid; gap: 10px; padding: 8px; }
 .skeleton .row {
   display: grid;
-  grid-template-columns: 1.2fr 1.6fr .6fr;
+  grid-template-columns: 1.2fr 1.4fr 1.2fr .6fr;
   gap: 12px; align-items: center;
 }
 .sk {
@@ -96,6 +97,7 @@
   animation: shimmer 1.2s infinite;
 }
 .sk-name { width: 60%; }
+.sk-desc { width: 70%; }
 .sk-subgroups { width: 70%; }
 .sk-status { width: 40%; height: 20px; border-radius: 9999px; }
 

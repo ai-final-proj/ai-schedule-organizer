@@ -5,6 +5,7 @@ type CohortStatus = 'Active' | 'Completed' | 'Upcoming' | 'Planning';
 
 interface CohortRow {
   name: string; // "Spring 2024"
+  description?: string; // cohort description from backend
   subgroups: string[]; // ["A1", "A2"] or []
   status?: CohortStatus; // pill (optional; backend may not provide)
 }
@@ -20,7 +21,7 @@ export class CohortsListingComponent implements OnInit {
   loading = true;
   rows: CohortRow[] = [];
   page = 1;
-  size = 100;
+  size = 20;
   total: number | null = null;
 
   ngOnInit() {
@@ -61,6 +62,7 @@ export class CohortsListingComponent implements OnInit {
           }
           const row: CohortRow = {
             name: raw?.name ?? '',
+            description: raw?.description ?? '',
             subgroups,
             status: raw?.status as CohortStatus | undefined,
           };
