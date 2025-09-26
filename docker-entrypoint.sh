@@ -1,6 +1,26 @@
 #!/bin/bash
 set -e
 
+# Start PostgreSQL service
+echo "[info] Starting PostgreSQL service..."
+service postgresql start
+
+# Wait for PostgreSQL to be ready
+echo "[info] Waiting for PostgreSQL to be ready..."
+sleep 5
+
+# Create database and user if they don't exist
+echo "[info] Setting up PostgreSQL database..."
+sudo -u postgres psql -c "CREATE DATABASE ai_schedule_organizer;" 2>/dev/null || echo "[info] Database already exists"
+sudo -u postgres psql -c "CREATE USER postgres WITH PASSWORD 'postgres';" 2>/dev/null || echo "[info] User already exists"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ai_schedule_organizer TO postgres;" 2>/dev/null || echo "[info] Privileges already granted"
+
+# Set default DATABASE_URL if not provided
+if [ -z "$DATABASE_URL" ]; then
+  export DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/ai_schedule_organizer"
+  echo "[info] Using default DATABASE_URL: $DATABASE_URL"
+fi
+
 # Generate a .env file from environment variables (e.g., Hugging Face Secrets)
 # By default, capture the common keys this app uses. Override with ENV_KEYS.
 ENV_PATH=${ENV_PATH:-"/app/.env"}
@@ -57,31 +77,8 @@ if command -v alembic >/dev/null 2>&1; then
     exit 1
   fi
   
-  # Wait for PostgreSQL to be ready
-  echo "[info] Detected PostgreSQL connection, waiting for database to be ready..."
-  # Extract connection details from DATABASE_URL
-  DB_HOST=$(echo "$DATABASE_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
-  DB_PORT=$(echo "$DATABASE_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
-  
-  if [ -n "$DB_HOST" ] && [ -n "$DB_PORT" ]; then
-    echo "[info] Waiting for PostgreSQL at $DB_HOST:$DB_PORT..."
-    timeout=60
-    while [ $timeout -gt 0 ]; do
-      if nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; then
-        echo "[info] PostgreSQL is ready!"
-        break
-      fi
-      echo "[info] Waiting for PostgreSQL... ($timeout seconds remaining)"
-      sleep 2
-      timeout=$((timeout - 2))
-    done
-    
-    if [ $timeout -le 0 ]; then
-      echo "[error] PostgreSQL connection timeout after 60 seconds" >&2
-      echo "[error] Please ensure PostgreSQL is running and accessible" >&2
-      exit 1
-    fi
-  fi
+  # PostgreSQL is already running locally, no need to check connection
+  echo "[info] Using local PostgreSQL instance"
   
   echo "[info] Running database migrations..."
   if ! alembic upgrade head; then

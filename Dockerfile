@@ -9,8 +9,11 @@ ARG SKIP_FRONTEND_BUILD=false
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies including netcat for database connection checks
-RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
+# Install system dependencies including PostgreSQL and netcat
+RUN apt-get update && apt-get install -y \
+    postgresql postgresql-contrib \
+    netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy Python requirements
 COPY requirements.txt requirements.txt
