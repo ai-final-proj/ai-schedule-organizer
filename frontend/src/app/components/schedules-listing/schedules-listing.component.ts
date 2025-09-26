@@ -37,7 +37,7 @@ export class SchedulesListingComponent implements OnInit {
 
   load() {
     this.loading = true;
-    const url = `http://docker.internal.host:7860/api/schedules?page=${this.page}&size=${this.size}`;
+    const url = `/api/schedules?page=${this.page}&size=${this.size}`;
     fetch(url)
       .then((r) => r.json())
       .then((data: any) => {

@@ -29,7 +29,7 @@ export class CohortsListingComponent implements OnInit {
 
   load() {
     this.loading = true;
-    const url = `http://docker.internal.host:7860/api/cohorts?page=${this.page}&size=${this.size}`;
+    const url = `/api/cohorts?page=${this.page}&size=${this.size}`;
     fetch(url)
       .then((r) => r.json())
       .then((data: any) => {

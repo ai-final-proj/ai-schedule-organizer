@@ -27,7 +27,7 @@ export class ProgramsListingComponent implements OnInit {
 
   load() {
     this.loading = true;
-    const url = `http://docker.internal.host:7860/api/programs?page=${this.page}&size=${this.size}`;
+    const url = `/api/programs?page=${this.page}&size=${this.size}`;
     fetch(url)
       .then((r) => r.json())
       .then((data: any) => {

@@ -33,7 +33,7 @@ export class UsersListingComponent implements OnInit {
 
   load() {
     this.loading = true;
-    const url = `http://docker.internal.host:7860/api/users?page=${this.page}&size=${this.size}`;
+    const url = `/api/users?page=${this.page}&size=${this.size}`;
     fetch(url)
       .then((r) => r.json())
       .then((data: any) => {
