@@ -1,13 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-type CohortStatus = 'Active' | 'Completed' | 'Upcoming' | 'Planning';
-
 interface CohortRow {
   name: string; // "Spring 2024"
   description?: string; // cohort description from backend
   subgroups: string[]; // ["A1", "A2"] or []
-  status?: CohortStatus; // pill (optional; backend may not provide)
 }
 
 @Component({
@@ -64,7 +61,6 @@ export class CohortsListingComponent implements OnInit {
             name: raw?.name ?? '',
             description: raw?.description ?? '',
             subgroups,
-            status: raw?.status as CohortStatus | undefined,
           };
           return row;
         });

@@ -17,7 +17,6 @@
             <th scope="col">Cohort Name</th>
             <th scope="col">Description</th>
             <th scope="col">Subgroups</th>
-            <th scope="col">Status</th>
           </tr>
         </thead>
 
@@ -35,15 +34,6 @@
               </ng-container>
               <ng-template #na>—</ng-template>
             </td>
-            <td>
-              <span class="badge status"
-                    [class.active]="r.status === 'Active'"
-                    [class.completed]="r.status === 'Completed'"
-                    [class.upcoming]="r.status === 'Upcoming'"
-                    [class.planning]="r.status === 'Planning'">
-                {{ r.status }}
-              </span>
-            </td>
           </tr>
         </tbody>
       </table>
@@ -54,7 +44,6 @@
             <span class="sk sk-name"></span>
             <span class="sk sk-desc"></span>
             <span class="sk sk-subgroups"></span>
-            <span class="sk sk-status"></span>
           </div>
         </div>
       </ng-template>
