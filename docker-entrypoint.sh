@@ -71,4 +71,35 @@ PY
 fi
 
 # Start the requested command (supervisord)
+# --- debug output to help HF logs when container starts ---
+echo "[debug] Container startup: $(date)"
+echo "[debug] Checking presence of important env vars (values hidden):"
+for k in SECRET_KEY DATABASE_URL N8N_DATABASE_URL N8N_BASIC_AUTH_ACTIVE N8N_BASIC_AUTH_USER N8N_BASIC_AUTH_PASSWORD N8N_DB_TYPE; do
+  if [ -n "$(printenv "$k")" ]; then
+    echo "[debug] $k=SET"
+  else
+    echo "[debug] $k=NOT_SET"
+  fi
+done
+
+echo "[debug] Checking binaries and versions (if present):"
+for cmd in nginx n8n gunicorn node npm python3; do
+  if command -v "$cmd" >/dev/null 2>&1; then
+    echo "[debug] $cmd -> $(command -v $cmd)";
+    case "$cmd" in
+      node) node -v || true ;; 
+      npm) npm -v || true ;;
+      python3) python3 --version || true ;;
+    esac
+  else
+    echo "[debug] $cmd -> MISSING";
+  fi
+done
+
+echo "[debug] Listing key config dirs for quick inspection:"
+ls -la /etc/supervisor || true
+ls -la /etc/nginx || true
+ls -la /app || true
+
+echo "[debug] Now execing main process: $@"
 exec "$@"
