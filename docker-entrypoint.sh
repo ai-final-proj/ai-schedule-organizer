@@ -30,4 +30,45 @@ done
 # Export path so the app can load it explicitly if needed
 export DOTENV_FILE="$ENV_PATH"
 
+# --- n8n DB auto-configuration ---
+# Priority: explicit N8N_DB_* vars left alone. If N8N_DATABASE_URL is supplied, parse it and export N8N_DB_* vars.
+# Otherwise if DATABASE_URL is present and N8N_DB_TYPE is not set, parse DATABASE_URL and export.
+if [ -z "$N8N_DB_TYPE" ]; then
+  TARGET_URL=""
+  if [ -n "$N8N_DATABASE_URL" ]; then
+    TARGET_URL="$N8N_DATABASE_URL"
+    echo "[info] Using N8N_DATABASE_URL to configure n8n Postgres connection"
+  elif [ -n "$DATABASE_URL" ]; then
+    TARGET_URL="$DATABASE_URL"
+    echo "[info] No explicit N8N_DATABASE_URL; falling back to DATABASE_URL to configure n8n"
+  fi
+
+  if [ -n "$TARGET_URL" ]; then
+    # Use a small python snippet to parse the DSN and export the expected env vars.
+    eval "$(python3 - <<'PY'
+import os, urllib.parse, sys
+db = os.environ.get('TARGET_URL')
+if not db:
+    sys.exit(0)
+# remove sql alchemy driver prefix like 'postgresql+psycopg://' if present
+if db.startswith('postgresql+'):
+    db = db.split('+',1)[1]
+p = urllib.parse.urlparse(db)
+user = p.username or ''
+pwd = p.password or ''
+host = p.hostname or 'localhost'
+port = p.port or 5432
+dbname = p.path.lstrip('/')
+print('export N8N_DB_TYPE=postgresdb')
+print(f'export N8N_DB_POSTGRESDB="{dbname}"')
+print(f'export N8N_DB_POSTGRES_USER="{user}"')
+print(f'export N8N_DB_POSTGRES_PASSWORD="{pwd}"')
+print(f'export N8N_DB_POSTGRES_HOST="{host}"')
+print(f'export N8N_DB_POSTGRES_PORT="{port}"')
+PY
+")
+  fi
+fi
+
+# Start the requested command (supervisord)
 exec "$@"
