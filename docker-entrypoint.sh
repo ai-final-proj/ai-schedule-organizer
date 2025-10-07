@@ -10,7 +10,7 @@ fi
 # Generate a .env file from environment variables (e.g., Hugging Face Secrets)
 # By default, capture the common keys this app uses. Override with ENV_KEYS.
 ENV_PATH=${ENV_PATH:-"/app/.env"}
-KEYS=${ENV_KEYS:-"SECRET_KEY DATABASE_URL PORT"}
+KEYS=${ENV_KEYS:-"SECRET_KEY DATABASE_URL PORT FLASK_ENV"}
 
 # Try to write to ENV_PATH, fall back to /tmp if not writable
 if ! ( mkdir -p "$(dirname "$ENV_PATH")" >/dev/null 2>&1 && touch "$ENV_PATH" >/dev/null 2>&1 ); then
