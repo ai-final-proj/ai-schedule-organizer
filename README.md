@@ -151,19 +151,36 @@ python app.py
 -   Set `SECRET_KEY` as a secret.
 -   The app listens on port `7860`. Ensure the frontend targets the container host/port (avoid `localhost` in some setups).
 
+### Recommended Secrets for running n8n on Hugging Face Spaces
+
+Add these to your Space `Settings` -> `Secrets` so the container can generate a correct `.env` at startup:
+
+-   **`DATABASE_URL`** or **`N8N_DATABASE_URL`**: full Postgres DSN, e.g. `postgresql+psycopg://user:pass@host:5432/dbname?sslmode=require` (required for persistence).
+-   **`SECRET_KEY`**: Flask secret string.
+-   **`N8N_ENCRYPTION_KEY`**: base64 32-byte string (generate with `openssl rand -base64 32`).
+-   **`WEBHOOK_URL`**: `https://<your-space>.hf.space/n8n/` (important: nginx proxies n8n under `/n8n/`).
+-   **`N8N_EDITOR_BASE_URL`**: same as `WEBHOOK_URL` (recommended).
+-   **`N8N_BASIC_AUTH_ACTIVE`**, **`N8N_BASIC_AUTH_USER`**, **`N8N_BASIC_AUTH_PASSWORD`**: enable and set basic auth to protect the n8n editor.
+
+Optional (entrypoint will infer many of these from the DSN):
+
+-   `N8N_DB_TYPE` (set to `postgresdb` if not auto-detected)
+-   `N8N_DB_POSTGRESDB`, `N8N_DB_POSTGRES_USER`, `N8N_DB_POSTGRES_PASSWORD`, `N8N_DB_POSTGRES_HOST`, `N8N_DB_POSTGRES_PORT`
+
+After adding these, redeploy the Space and view the Logs tab. If you still get a 503, paste the `docker-entrypoint.sh` debug block here and I'll analyze it.
+
 ## Running n8n on Hugging Face Spaces
 
 This repository includes a bundled n8n installation that will run alongside the Flask backend inside the same Docker container. n8n is exposed under the path `/n8n/` and is proxied by nginx.
 
 Recommended environment variables (set these as Secrets in your HF Space):
 
-- `N8N_BASIC_AUTH_ACTIVE=true` — enable basic auth to protect the n8n editor
-- `N8N_BASIC_AUTH_USER` — username for n8n basic auth
-- `N8N_BASIC_AUTH_PASSWORD` — password for n8n basic auth
-- `PORT` — must remain `7860` for HF Spaces (default: `7860`)
+-   `N8N_BASIC_AUTH_ACTIVE=true` — enable basic auth to protect the n8n editor
+-   `N8N_BASIC_AUTH_USER` — username for n8n basic auth
+-   `N8N_BASIC_AUTH_PASSWORD` — password for n8n basic auth
+-   `PORT` — must remain `7860` for HF Spaces (default: `7860`)
 
-Automatic Postgres wiring for n8n
----------------------------------
+## Automatic Postgres wiring for n8n
 
 This image will configure n8n to use Postgres automatically if you provide database connection information.
 
@@ -177,17 +194,17 @@ If you want n8n to persist data in your Neon Postgres, add either `N8N_DATABASE_
 
 Recommended HF Secrets to set for persistent n8n:
 
-- `N8N_DATABASE_URL` or `DATABASE_URL` (if you prefer to share the same DB)
-- `N8N_BASIC_AUTH_ACTIVE`, `N8N_BASIC_AUTH_USER`, `N8N_BASIC_AUTH_PASSWORD`
+-   `N8N_DATABASE_URL` or `DATABASE_URL` (if you prefer to share the same DB)
+-   `N8N_BASIC_AUTH_ACTIVE`, `N8N_BASIC_AUTH_USER`, `N8N_BASIC_AUTH_PASSWORD`
 
 Ensure the DB user has permission to create tables; n8n will create its schema on first run.
 
 Access points after deployment on HF Spaces:
 
-- App (frontend + API): https://<your-space>.hf.space/
-- n8n editor: https://<your-space>.hf.space/n8n/
+-   App (frontend + API): https://<your-space>.hf.space/
+-   n8n editor: https://<your-space>.hf.space/n8n/
 
 Notes and caveats:
 
-- n8n persists its data in-memory by default in this setup. For production-grade persistence, configure n8n's external database (Postgres) and set `N8N_DB_TYPE`, `N8N_DB_POSTGRESDB`, `N8N_DB_POSTGRES_PASSWORD`, etc., as environment variables. This repo keeps the setup minimal to fit inside a single HF Space container.
-- If you enable basic auth via `N8N_BASIC_AUTH_*` variables, the nginx proxy will forward requests but n8n will enforce the auth itself.
+-   n8n persists its data in-memory by default in this setup. For production-grade persistence, configure n8n's external database (Postgres) and set `N8N_DB_TYPE`, `N8N_DB_POSTGRESDB`, `N8N_DB_POSTGRES_PASSWORD`, etc., as environment variables. This repo keeps the setup minimal to fit inside a single HF Space container.
+-   If you enable basic auth via `N8N_BASIC_AUTH_*` variables, the nginx proxy will forward requests but n8n will enforce the auth itself.

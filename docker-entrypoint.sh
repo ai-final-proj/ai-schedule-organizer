@@ -10,7 +10,8 @@ fi
 # Generate a .env file from environment variables (e.g., Hugging Face Secrets)
 # By default, capture the common keys this app uses. Override with ENV_KEYS.
 ENV_PATH=${ENV_PATH:-"/app/.env"}
-KEYS=${ENV_KEYS:-"SECRET_KEY DATABASE_URL PORT FLASK_ENV"}
+# Include additional n8n and webhook-related vars so HF Secrets get written into the generated .env
+KEYS=${ENV_KEYS:-"SECRET_KEY DATABASE_URL PORT FLASK_ENV N8N_BASIC_AUTH_ACTIVE N8N_BASIC_AUTH_USER N8N_BASIC_AUTH_PASSWORD N8N_ENCRYPTION_KEY N8N_DATABASE_URL WEBHOOK_URL N8N_EDITOR_BASE_URL N8N_HOST N8N_PORT N8N_DB_TYPE N8N_DB_POSTGRESDB N8N_DB_POSTGRES_USER N8N_DB_POSTGRES_PASSWORD N8N_DB_POSTGRES_HOST N8N_DB_POSTGRES_PORT DOTENV_FILE"}
 
 # Try to write to ENV_PATH, fall back to /tmp if not writable
 if ! ( mkdir -p "$(dirname "$ENV_PATH")" >/dev/null 2>&1 && touch "$ENV_PATH" >/dev/null 2>&1 ); then
