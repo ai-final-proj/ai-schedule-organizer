@@ -10,8 +10,7 @@ fi
 # Generate a .env file from environment variables (e.g., Hugging Face Secrets)
 # By default, capture the common keys this app uses. Override with ENV_KEYS.
 ENV_PATH=${ENV_PATH:-"/app/.env"}
-# Include additional n8n and webhook-related vars so HF Secrets get written into the generated .env
-KEYS=${ENV_KEYS:-"SECRET_KEY DATABASE_URL PORT FLASK_ENV N8N_BASIC_AUTH_ACTIVE N8N_BASIC_AUTH_USER N8N_BASIC_AUTH_PASSWORD N8N_ENCRYPTION_KEY N8N_DATABASE_URL WEBHOOK_URL N8N_EDITOR_BASE_URL N8N_HOST N8N_PORT N8N_DB_TYPE N8N_DB_POSTGRESDB N8N_DB_POSTGRES_USER N8N_DB_POSTGRES_PASSWORD N8N_DB_POSTGRES_HOST N8N_DB_POSTGRES_PORT DOTENV_FILE"}
+KEYS=${ENV_KEYS:-"SECRET_KEY DATABASE_URL PORT"}
 
 # Try to write to ENV_PATH, fall back to /tmp if not writable
 if ! ( mkdir -p "$(dirname "$ENV_PATH")" >/dev/null 2>&1 && touch "$ENV_PATH" >/dev/null 2>&1 ); then
@@ -31,76 +30,4 @@ done
 # Export path so the app can load it explicitly if needed
 export DOTENV_FILE="$ENV_PATH"
 
-# --- n8n DB auto-configuration ---
-# Priority: explicit N8N_DB_* vars left alone. If N8N_DATABASE_URL is supplied, parse it and export N8N_DB_* vars.
-# Otherwise if DATABASE_URL is present and N8N_DB_TYPE is not set, parse DATABASE_URL and export.
-if [ -z "$N8N_DB_TYPE" ]; then
-  TARGET_URL=""
-  if [ -n "$N8N_DATABASE_URL" ]; then
-    TARGET_URL="$N8N_DATABASE_URL"
-    echo "[info] Using N8N_DATABASE_URL to configure n8n Postgres connection"
-  elif [ -n "$DATABASE_URL" ]; then
-    TARGET_URL="$DATABASE_URL"
-    echo "[info] No explicit N8N_DATABASE_URL; falling back to DATABASE_URL to configure n8n"
-  fi
-
-  if [ -n "$TARGET_URL" ]; then
-    # Use a small python snippet to parse the DSN and export the expected env vars.
-    eval "$(python3 - <<'PY'
-import os, urllib.parse, sys
-db = os.environ.get('TARGET_URL')
-if not db:
-    sys.exit(0)
-# remove sql alchemy driver prefix like 'postgresql+psycopg://' if present
-if db.startswith('postgresql+'):
-    db = db.split('+',1)[1]
-p = urllib.parse.urlparse(db)
-user = p.username or ''
-pwd = p.password or ''
-host = p.hostname or 'localhost'
-port = p.port or 5432
-dbname = p.path.lstrip('/')
-print('export N8N_DB_TYPE=postgresdb')
-print(f'export N8N_DB_POSTGRESDB="{dbname}"')
-print(f'export N8N_DB_POSTGRES_USER="{user}"')
-print(f'export N8N_DB_POSTGRES_PASSWORD="{pwd}"')
-print(f'export N8N_DB_POSTGRES_HOST="{host}"')
-print(f'export N8N_DB_POSTGRES_PORT="{port}"')
-PY
-")
-  fi
-fi
-
-# Start the requested command (supervisord)
-# --- debug output to help HF logs when container starts ---
-echo "[debug] Container startup: $(date)"
-echo "[debug] Checking presence of important env vars (values hidden):"
-for k in SECRET_KEY DATABASE_URL N8N_DATABASE_URL N8N_BASIC_AUTH_ACTIVE N8N_BASIC_AUTH_USER N8N_BASIC_AUTH_PASSWORD N8N_DB_TYPE; do
-  if [ -n "$(printenv "$k")" ]; then
-    echo "[debug] $k=SET"
-  else
-    echo "[debug] $k=NOT_SET"
-  fi
-done
-
-echo "[debug] Checking binaries and versions (if present):"
-for cmd in nginx n8n gunicorn node npm python3; do
-  if command -v "$cmd" >/dev/null 2>&1; then
-    echo "[debug] $cmd -> $(command -v $cmd)";
-    case "$cmd" in
-      node) node -v || true ;; 
-      npm) npm -v || true ;;
-      python3) python3 --version || true ;;
-    esac
-  else
-    echo "[debug] $cmd -> MISSING";
-  fi
-done
-
-echo "[debug] Listing key config dirs for quick inspection:"
-ls -la /etc/supervisor || true
-ls -la /etc/nginx || true
-ls -la /app || true
-
-echo "[debug] Now execing main process: $@"
 exec "$@"

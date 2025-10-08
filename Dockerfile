@@ -11,10 +11,8 @@ WORKDIR /app
 
 # (Optional) system utils; Postgres is not required when using Neon
 RUN apt-get update && apt-get install -y \
-  ca-certificates curl gnupg gnupg2 lsb-release \
-  build-essential \
-  nginx supervisor \
-  && rm -rf /var/lib/apt/lists/*
+    ca-certificates curl gnupg \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy Python requirements
 COPY requirements.txt requirements.txt
@@ -37,12 +35,6 @@ RUN if [ "$SKIP_FRONTEND_BUILD" != "true" ]; then \
       echo "[build] Skipping frontend build; using existing /app/frontend/dist if present"; \
     fi
 
-# Install n8n globally so we can run it inside the container. We install only when building final image.
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-  && apt-get install -y nodejs \
-  && npm install -g n8n@1.0.0 \
-  && rm -rf /var/lib/apt/lists/* /root/.npm
-
 # Expose port (HF Spaces requires 7860)
 EXPOSE 7860
 
@@ -53,17 +45,11 @@ WORKDIR /app
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
-# Copy supervisor and nginx configs
-COPY docker/supervisor/ai-services.conf /etc/supervisor/conf.d/ai-services.conf
-COPY docker/nginx/ai.conf /etc/nginx/sites-available/ai.conf
-RUN ln -sf /etc/nginx/sites-available/ai.conf /etc/nginx/sites-enabled/ai.conf
-RUN rm -f /etc/nginx/sites-enabled/default || true
-
 ENV PYTHONUNBUFFERED=1 \
     PORT=7860
 
-# Entrypoint writes .env from env vars before starting. Then start supervisord which manages services.
+# Entrypoint writes .env from env vars before starting
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
-# Supervisor will run nginx, gunicorn (on 127.0.0.1:7861) and n8n (default 5678). Expose 7860 externally.
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
+# Run Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:7860", "--timeout", "120", "--log-level", "debug", "app:app"]
