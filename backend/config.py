@@ -40,3 +40,6 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev")
     SQLALCHEMY_DATABASE_URI = _normalized_db_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # n8n webhook URL to forward prompts to. Set this in your deployment environment.
+    # Example: https://example-n8n-dot-yourdomain/webhook/ai-prompt
+    N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "https://example-n8n.example.com/webhook/ai-prompt")

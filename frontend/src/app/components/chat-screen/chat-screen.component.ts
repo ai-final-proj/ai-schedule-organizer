@@ -77,18 +77,46 @@ export class ChatScreenComponent implements AfterViewInit {
     });
     this.inputValue = '';
     this.scrollToBottom();
+    // Call backend API which forwards the prompt to n8n and returns results
+    (async () => {
+      try {
+        const res = await fetch('/api/prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: text })
+        });
+        let data: any = null;
+        try { data = await res.json(); } catch (e) { data = { text: await res.text() }; }
 
-    // fake AI reply (replace with real call)
-    setTimeout(() => {
-      this.messages.push({
-        id: String(Date.now() + 1),
-        type: 'ai',
-        content:
-          "Got it! I'll help with that. Share any constraints (cohort, room, or conflicts) and I’ll propose a schedule.",
-        time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-      });
-      this.scrollToBottom();
-    }, 800);
+        // Prefer a human-friendly text field if available, otherwise stringify
+        let reply = '';
+        if (data && data.n8n_response) {
+          if (typeof data.n8n_response === 'string') reply = data.n8n_response;
+          else if (data.n8n_response.text) reply = data.n8n_response.text;
+          else reply = JSON.stringify(data.n8n_response);
+        } else if (data && data.text) {
+          reply = data.text;
+        } else {
+          reply = 'No response from n8n.';
+        }
+
+        this.messages.push({
+          id: String(Date.now() + 1),
+          type: 'ai',
+          content: reply,
+          time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+        });
+        this.scrollToBottom();
+      } catch (err) {
+        this.messages.push({
+          id: String(Date.now() + 2),
+          type: 'ai',
+          content: 'Error contacting server: ' + String(err),
+          time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+        });
+        this.scrollToBottom();
+      }
+    })();
   }
 
   onKeydown(e: KeyboardEvent) {
