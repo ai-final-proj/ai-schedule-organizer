@@ -1,23 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { ScheduleDetailModel } from '../schedule-detail/schedule-detail.component';
 
 interface ScheduleRow {
   id: number;
-  startDate: string; // ISO: "2024-08-21"
-  startTime: string; // "09:00"
-  endDate: string; // ISO
-  endTime: string; // "11:00"
-  cohort: string; // "Spring 2024"
-  subGroup: string; // "Group A"
-  program: { id: number; name: string }; // linked program
+  name: string;
+  description?: string | null;
+  cohort?: string | null;
+  subgroup?: string | null;
+  program?: { id: number; name: string } | null;
 }
 
 @Component({
   selector: 'app-schedules-listing',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './schedules-listing.component.html',
   styleUrls: ['./schedules-listing.component.scss'],
 })
@@ -28,6 +26,7 @@ export class SchedulesListingComponent implements OnInit {
   page = 1;
   size = 20;
   total: number | null = null;
+  error: string | null = null;
 
   constructor(private router: Router) {}
 
@@ -37,6 +36,7 @@ export class SchedulesListingComponent implements OnInit {
 
   load() {
     this.loading = true;
+    this.error = null;
     const url = `/api/schedules?page=${this.page}&size=${this.size}`;
     fetch(url)
       .then((r) => {
@@ -44,19 +44,25 @@ export class SchedulesListingComponent implements OnInit {
         return r.json();
       })
       .then((data: any) => {
-        if (Array.isArray(data)) {
-          this.rows = data as ScheduleRow[];
-          this.total = null;
-        } else if (data && Array.isArray(data.items)) {
-          this.rows = data.items as ScheduleRow[];
-          this.total = typeof data.total === 'number' ? data.total : null;
-        } else {
+        const items: any[] | null = Array.isArray(data)
+          ? data
+          : data && Array.isArray(data.items)
+          ? data.items
+          : null;
+
+        if (!items) {
           this.rows = [];
           this.total = null;
+          return;
         }
+
+        this.rows = items.map((raw) => this.toRow(raw));
+        this.total =
+          data && typeof data.total === 'number' ? data.total : null;
       })
       .catch((err) => {
         console.error('Fetch schedules failed:', url, err);
+        this.error = 'Unable to load schedules.';
         this.rows = [];
         this.total = null;
       })
@@ -65,11 +71,6 @@ export class SchedulesListingComponent implements OnInit {
 
   trackById(_: number, r: ScheduleRow) {
     return r.id;
-  }
-
-  // Optional formatter if you want to adjust display later
-  fmt(date: string, time: string) {
-    return `${date} at ${time}`;
   }
 
   openDetail(r: ScheduleRow, tab: 'details' | 'periods' = 'details') {
@@ -111,5 +112,18 @@ export class SchedulesListingComponent implements OnInit {
     this.size = n;
     this.page = 1;
     this.load();
+  }
+
+  private toRow(raw: any): ScheduleRow {
+    return {
+      id: Number(raw.id),
+      name: raw.name ?? 'Untitled schedule',
+      description: raw.description ?? null,
+      cohort: raw.cohort ?? null,
+      subgroup: raw.subgroup ?? null,
+      program: raw.program
+        ? { id: Number(raw.program.id), name: raw.program.name ?? 'Program' }
+        : null,
+    };
   }
 }

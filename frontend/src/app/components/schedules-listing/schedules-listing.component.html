@@ -13,15 +13,16 @@
     </div>
 
     <div class="table-wrap" [class.loading]="loading">
+      <div class="error-banner" *ngIf="error">{{ error }}</div>
       <table class="schedules-table" role="table" *ngIf="!loading; else skeleton">
         <thead>
           <tr>
             <th scope="col">ID</th>
-            <th scope="col">Start Date and Time</th>
-            <th scope="col">End Date and Time</th>
-            <th scope="col">Cohort</th>
-            <th scope="col">Sub‑Group</th>
+            <th scope="col">Schedule</th>
             <th scope="col">Program</th>
+            <th scope="col">Cohort</th>
+            <th scope="col">Subgroup</th>
+            <th scope="col">Description</th>
           </tr>
         </thead>
 
@@ -34,16 +35,14 @@
             (keydown.enter)="openDetail(r, 'details')"
             (keydown.space)="openDetail(r, 'details')">
             <td class="cell-id">#{{ r.id }}</td>
-            <td>{{ fmt(r.startDate, r.startTime) }}</td>
-            <td>{{ fmt(r.endDate, r.endTime) }}</td>
-            <td>{{ r.cohort }}</td>
-            <td>{{ r.subGroup }}</td>
+            <td>{{ r.name }}</td>
             <td class="cell-program">
-              <!-- Link to program detail route; adjust to your actual route pattern -->
-              <a [routerLink]="['/programs', r.program.id]" class="program-link">
-                {{ r.program.name }}
-              </a>
+              <span *ngIf="r.program; else noProgram">{{ r.program.name }}</span>
+              <ng-template #noProgram>—</ng-template>
             </td>
+            <td>{{ r.cohort || '—' }}</td>
+            <td>{{ r.subgroup || '—' }}</td>
+            <td>{{ r.description || '—' }}</td>
           </tr>
         </tbody>
       </table>
@@ -52,11 +51,11 @@
         <div class="skeleton">
           <div class="row" *ngFor="let i of [1,2,3,4,5]">
             <span class="sk sk-id"></span>
-            <span class="sk sk-datetime"></span>
-            <span class="sk sk-datetime"></span>
+            <span class="sk sk-name"></span>
+            <span class="sk sk-program"></span>
             <span class="sk sk-cohort"></span>
             <span class="sk sk-subgroup"></span>
-            <span class="sk sk-program"></span>
+            <span class="sk sk-desc"></span>
           </div>
         </div>
       </ng-template>

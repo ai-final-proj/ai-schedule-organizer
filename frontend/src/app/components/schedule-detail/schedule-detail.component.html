@@ -1,92 +1,114 @@
 <section class="schedule-detail-page">
-  <!-- Header -->
   <div class="topbar">
     <button class="back-btn" type="button" (click)="goBack()" aria-label="Back">
-      <!-- ArrowLeft icon -->
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path>
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M19 12H5"></path>
+        <path d="M12 19l-7-7 7-7"></path>
       </svg>
     </button>
     <div class="title-wrap">
-      <h1 class="title">{{ schedule.title }}</h1>
-      <p class="subtitle">Schedule details and period breakdown</p>
+      <h1 class="title">{{ schedule?.name || 'Schedule' }}</h1>
+      <p class="subtitle">Schedule details and associated periods</p>
     </div>
   </div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab" [class.active]="activeTab === 'details'" (click)="setTab('details')">Schedule Detail</button>
-    <button class="tab" [class.active]="activeTab === 'periods'" (click)="setTab('periods')">Periods</button>
+  <div class="status-banner" *ngIf="loading">Loading schedule…</div>
+  <div class="status-banner error" *ngIf="error">{{ error }}</div>
+
+  <div class="tabs" *ngIf="!loading && schedule">
+    <button
+      class="tab"
+      [class.active]="activeTab === 'details'"
+      (click)="setTab('details')"
+    >
+      Schedule Detail
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab === 'periods'"
+      (click)="setTab('periods')"
+    >
+      Periods
+    </button>
     <span class="tabs-bg"></span>
   </div>
 
-  <!-- Details Card -->
-  <div class="card" *ngIf="activeTab === 'details'">
+  <div class="card" *ngIf="!loading && schedule && activeTab === 'details'">
     <div class="card-head">
       <div class="card-title">Schedule Information</div>
-      <div class="card-subtitle">Complete details for this scheduled session</div>
+      <div class="card-subtitle">
+        Metadata pulled from the backend schedule record.
+      </div>
     </div>
 
     <div class="info-grid">
-      <div class="info-block">
-        <label>Title</label>
-        <p>{{ schedule.title }}</p>
-      </div>
-      <div class="info-block">
-        <label>Cohort</label>
-        <p>{{ schedule.cohort }}</p>
-      </div>
-      <div class="info-block">
-        <label>Sub‑Group</label>
-        <p>{{ schedule.subGroup }}</p>
-      </div>
       <div class="info-block">
         <label>Schedule ID</label>
         <p>#{{ schedule.id }}</p>
       </div>
       <div class="info-block">
-        <label>Start Date and Time</label>
-        <p>{{ fmt(schedule.startDate, schedule.startTime) }}</p>
+        <label>Schedule Name</label>
+        <p>{{ schedule.name }}</p>
       </div>
       <div class="info-block">
-        <label>End Date and Time</label>
-        <p>{{ fmt(schedule.endDate, schedule.endTime) }}</p>
+        <label>Description</label>
+        <p>{{ schedule.description || '—' }}</p>
       </div>
-
-      <div class="info-block" *ngIf="schedule.program">
+      <div class="info-block">
+        <label>Cohort</label>
+        <p>{{ schedule.cohort || '—' }}</p>
+      </div>
+      <div class="info-block">
+        <label>Subgroup</label>
+        <p>{{ schedule.subgroup || '—' }}</p>
+      </div>
+      <div class="info-block">
         <label>Program</label>
-        <p>{{ schedule.program.name }}</p>
+        <p>{{ schedule.program?.name || '—' }}</p>
       </div>
     </div>
   </div>
 
-  <!-- Periods Card -->
-  <div class="card" *ngIf="activeTab === 'periods'">
+  <div class="card" *ngIf="!loading && schedule && activeTab === 'periods'">
     <div class="card-head">
-      <div class="card-title">Scheduled Periods</div>
-      <div class="card-subtitle">Breakdown of individual periods within this schedule</div>
+      <div class="card-title">Associated Periods</div>
+      <div class="card-subtitle">
+        Periods linked to this schedule via schedule items.
+      </div>
     </div>
 
-    <div class="table-wrap">
+    <div class="table-wrap" *ngIf="periods?.length; else emptyPeriods">
       <table class="periods-table" role="table">
         <thead>
-        <tr>
-          <th>Period Name</th>
-          <th>Instructor</th>
-          <th>Start Date and Time</th>
-          <th>End Date and Time</th>
-        </tr>
+          <tr>
+            <th>Period Name</th>
+            <th>Description</th>
+            <th>Instructor</th>
+            <th>Category</th>
+          </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let p of periods">
-          <td>{{ p.name }}</td>
-          <td>{{ p.instructor }}</td>
-          <td>{{ fmt(p.startDate, p.startTime) }}</td>
-          <td>{{ fmt(p.endDate, p.endTime) }}</td>
-        </tr>
+          <tr *ngFor="let p of periods">
+            <td>{{ p.name }}</td>
+            <td>{{ p.description || '—' }}</td>
+            <td>{{ p.instructor || '—' }}</td>
+            <td>{{ p.category || '—' }}</td>
+          </tr>
         </tbody>
       </table>
     </div>
+    <ng-template #emptyPeriods>
+      <p class="empty-copy">No periods are associated with this schedule yet.</p>
+    </ng-template>
   </div>
 </section>
