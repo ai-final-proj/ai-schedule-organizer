@@ -5,12 +5,9 @@ from ..db import db
 from ..models import User, UserStatus
 from ..schemas import UserSchema, UserCreateSchema, UserUpdateSchema
 from .common import get_pagination
-from marshmallow import Schema, fields
+from .schemas.common import DeleteResponseSchema
 
 blp = Blueprint("users", __name__, description="Users CRUD")
-
-class DeleteResponseSchema(Schema):
-    deleted = fields.Boolean(required=True)
 
 @blp.route("/")
 class UsersList(MethodView):

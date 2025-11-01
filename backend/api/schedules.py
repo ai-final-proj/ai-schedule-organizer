@@ -2,7 +2,7 @@
 from datetime import datetime
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from marshmallow import Schema, fields
+from .schemas.common import DeleteResponseSchema
 from ..db import db
 from ..models import (
     Schedule, ScheduleItem, Program, Cohort, CohortSubgroup,
@@ -15,9 +15,6 @@ from ..schemas import (
 from .common import get_pagination
 
 blp = Blueprint("schedules", __name__, description="Schedules, periods, and items")
-
-class DeleteResponseSchema(Schema):
-    deleted = fields.Boolean(required=True)
 
 def _schedule_dict(s: Schedule):
     return {

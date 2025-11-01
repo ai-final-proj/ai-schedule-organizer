@@ -8,12 +8,9 @@ from ..schemas import (
     CohortSubgroupSchema, SubgroupCreateSchema
 )
 from .common import get_pagination
-from marshmallow import Schema, fields
+from .schemas.common import DeleteResponseSchema
 
 blp = Blueprint("cohorts", __name__, description="Cohorts & subgroups")
-
-class DeleteResponseSchema(Schema):
-    deleted = fields.Boolean(required=True)
 
 @blp.route("/")
 class CohortsList(MethodView):

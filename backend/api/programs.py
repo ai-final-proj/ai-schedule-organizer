@@ -1,7 +1,7 @@
 # backend/api/programs.py
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from marshmallow import Schema, fields
+from .schemas.common import DeleteResponseSchema
 
 from ..db import db
 from ..models import Program
@@ -9,10 +9,6 @@ from ..schemas import ProgramSchema, ProgramCreateSchema, ProgramUpdateSchema
 from .common import get_pagination
 
 blp = Blueprint("programs", __name__, description="Programs CRUD")
-
-# For delete responses
-class DeleteResponseSchema(Schema):
-    deleted = fields.Boolean(required=True)
 
 program_schema = ProgramSchema()
 
