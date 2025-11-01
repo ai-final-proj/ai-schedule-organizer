@@ -1,0 +1,27 @@
+name: Build & Deploy on VM
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: SSH build & restart on VM
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd ~/ || true
+            if [ -d app ]; then
+              cd app
+              git fetch --all
+              git reset --hard origin/main
+            else
+              git clone https://github.com/ai-final-proj/ai-schedule-organizer.git app
+              cd app
+            fi
+            docker build -t ai-schedule-organizer:latest .
+            docker rm -f ai_app || true
+            docker run -d --name ai_app -p 80:7860 --env-file ~/app/app.env ai-schedule-organizer:latest

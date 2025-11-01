@@ -16,14 +16,6 @@
 
     <!-- Scrollable messages area -->
     <div class="messages" #messagesScroller>
-      <div class="bubble ai">
-        <div class="avatar">AI</div>
-        <div class="content">
-          <p>Hello! I'm your AI Schedule Organizer assistant. I can help you manage schedules, resolve conflicts, and make recommendations. How can I assist you today?</p>
-          <span class="time">2:30 PM</span>
-        </div>
-      </div>
-
       <ng-container *ngFor="let m of messages">
         <div class="bubble" [class.user]="m.type === 'user'" [class.ai]="m.type === 'ai'">
           <div class="avatar" *ngIf="m.type === 'ai'">AI</div>
@@ -45,7 +37,7 @@
         placeholder="Ask me about schedules, users, or programs..."
         autocomplete="off"
       />
-      <button class="send-btn" type="submit" aria-label="Send">
+      <button class="send-btn" type="submit" aria-label="Send" [disabled]="sending">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M22 2L11 13"></path>
