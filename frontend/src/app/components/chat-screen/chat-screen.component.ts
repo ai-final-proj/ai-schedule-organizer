@@ -1,7 +1,15 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Output, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { v4 as uuidv4 } from 'uuid';
 
 type MsgType = 'user' | 'ai';
 
@@ -17,7 +25,7 @@ interface Message {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './chat-screen.component.html',
-  styleUrls: ['./chat-screen.component.scss']
+  styleUrls: ['./chat-screen.component.scss'],
 })
 export class ChatScreenComponent implements AfterViewInit {
   @Output() close = new EventEmitter<void>();
@@ -27,8 +35,7 @@ export class ChatScreenComponent implements AfterViewInit {
   sending = false;
 
   private readonly webhookUrl =
-    'http://http://35.224.46.46:5678/webhook-test/38cf2c4a-eb7a-4a66-970c-2c734a53b552';
-  private readonly sessionId = '4e1a7686b6694a5e9d45b878f271233a';
+    'http://localhost:5678/webhook-test/38cf2c4a-eb7a-4a66-970c-2c734a53b552';
 
   messages: Message[] = [
     {
@@ -36,8 +43,8 @@ export class ChatScreenComponent implements AfterViewInit {
       type: 'ai',
       content:
         "Hello! I'm your AI Schedule Organizer assistant. I can help you manage schedules, resolve conflicts, and make recommendations. How can I assist you today?",
-      time: '2:30 PM'
-    }
+      time: '2:30 PM',
+    },
   ];
 
   constructor(private location: Location, private router: Router) {}
@@ -66,63 +73,41 @@ export class ChatScreenComponent implements AfterViewInit {
     }
   }
 
-  send() {
+  async send() {
     if (this.sending) return;
-    const text = this.inputValue.trim();
-    if (!text) return;
+    const prompt = this.inputValue.trim();
+    if (!prompt) return;
 
-    const now = new Date();
-    const time = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    this.sending = true;
+    this.addUserMessage(prompt);
+    const sessionId = uuidv4();
+    try {
+      const payload = [
+        {
+          sessionId: sessionId,
+          action: 'sendMessage',
+          chatInput: prompt,
+        },
+      ];
 
-    // user message
-    this.messages.push({
-      id: String(now.getTime()),
-      type: 'user',
-      content: text,
-      time
-    });
-    this.inputValue = '';
-    this.scrollToBottom();
-    // Call backend API which forwards the prompt to n8n and returns results
-    (async () => {
-      try {
-        const res = await fetch('/api/prompt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: text })
-        });
-        let data: any = null;
-        try { data = await res.json(); } catch (e) { data = { text: await res.text() }; }
+      const res = await fetch(this.webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
 
-        // Prefer a human-friendly text field if available, otherwise stringify
-        let reply = '';
-        if (data && data.n8n_response) {
-          if (typeof data.n8n_response === 'string') reply = data.n8n_response;
-          else if (data.n8n_response.text) reply = data.n8n_response.text;
-          else reply = JSON.stringify(data.n8n_response);
-        } else if (data && data.text) {
-          reply = data.text;
-        } else {
-          reply = 'No response from n8n.';
-        }
+      const data = await res.json(); // assuming n8n returns JSON
+      const reply =
+        typeof data === 'string' ? data : data.text ?? JSON.stringify(data);
 
-        this.messages.push({
-          id: String(Date.now() + 1),
-          type: 'ai',
-          content: reply,
-          time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-        });
-        this.scrollToBottom();
-      } catch (err) {
-        this.messages.push({
-          id: String(Date.now() + 2),
-          type: 'ai',
-          content: 'Error contacting server: ' + String(err),
-          time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-        });
-        this.scrollToBottom();
-      }
-    })();
+      this.pushAiMessage(reply);
+    } catch (err) {
+      this.pushAiMessage(`Webhook error: ${String(err)}`);
+    } finally {
+      this.sending = false;
+      this.scrollToBottom();
+    }
   }
 
   onKeydown(e: KeyboardEvent) {
@@ -132,94 +117,14 @@ export class ChatScreenComponent implements AfterViewInit {
     }
   }
 
-  private async postToWebhook(chatInput: string) {
-    this.sending = true;
-    const payload = [
-      {
-        sessionId: this.sessionId,
-        action: 'sendMessage' as const,
-        chatInput
-      }
-    ];
-
-    try {
-      const response = await fetch(this.webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      let aiContent: string;
-
-      if (!response.ok) {
-        aiContent = `Workflow error: ${response.status} ${response.statusText}`;
-      } else {
-        aiContent = await this.parseWorkflowResponse(response);
-      }
-
-      this.pushAiMessage(aiContent);
-    } catch (error) {
-      console.error('Failed to send chat payload to n8n webhook', error);
-      const message =
-        error instanceof Error ? error.message : 'Unexpected error while calling the webhook.';
-      this.pushAiMessage(`Sorry, I couldn't reach the workflow. ${message}`);
-    } finally {
-      this.sending = false;
-      this.scrollToBottom();
-    }
-  }
-
-  private async parseWorkflowResponse(response: Response): Promise<string> {
-    const contentType = response.headers.get('content-type') ?? '';
-
-    try {
-      if (contentType.includes('application/json')) {
-        const data = await response.json();
-        return this.formatResponseMessage(data);
-      }
-
-      const text = await response.text();
-      if (text.trim().length === 0) {
-        return 'Workflow accepted the message.';
-      }
-
-      return `Workflow response: ${text}`;
-    } catch (error) {
-      console.warn('Unable to read webhook response body', error);
-      return 'Workflow accepted the message.';
-    }
-  }
-
-  private formatResponseMessage(data: unknown): string {
-    if (data == null) {
-      return 'Workflow accepted the message.';
-    }
-
-    if (typeof data === 'string') {
-      return data;
-    }
-
-    if (typeof data === 'object') {
-      const record = data as Record<string, unknown>;
-      const fallbackKeys = ['message', 'result', 'response', 'status'];
-
-      for (const key of fallbackKeys) {
-        const value = record[key];
-        if (typeof value === 'string' && value.trim().length > 0) {
-          return value;
-        }
-      }
-
-      try {
-        return `Workflow response: ${JSON.stringify(data)}`;
-      } catch {
-        return 'Workflow accepted the message.';
-      }
-    }
-
-    return `Workflow response: ${String(data)}`;
+  private addUserMessage(content: string) {
+    const now = new Date();
+    this.messages.push({
+      id: `${now.getTime()}-user`,
+      type: 'user',
+      content,
+      time: now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+    });
   }
 
   private pushAiMessage(content: string) {
@@ -228,7 +133,7 @@ export class ChatScreenComponent implements AfterViewInit {
       id: `${now.getTime()}-ai`,
       type: 'ai',
       content,
-      time: now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      time: now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
     });
   }
 }
