@@ -2,6 +2,7 @@
 from datetime import datetime
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from marshmallow import Schema, fields
 from .schemas.common import DeleteResponseSchema
 from ..db import db
 from ..models import (
