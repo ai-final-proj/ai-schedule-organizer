@@ -35,7 +35,7 @@ export class ChatScreenComponent implements AfterViewInit {
   sending = false;
 
   private readonly webhookUrl =
-    'http://http://35.224.46.46:5678/webhook/38cf2c4a-eb7a-4a66-970c-2c734a53b552';
+    'http://35.224.46.46:5678/webhook/38cf2c4a-eb7a-4a66-970c-2c734a53b552';
 
   messages: Message[] = [
     {
