@@ -96,7 +96,8 @@ export class ChatScreenComponent implements AfterViewInit {
       });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
 
-      const data = await res.json(); // assuming n8n returns JSON
+      const raw = await res.text();
+      const data = raw ? JSON.parse(raw) : { text: '' };
       const reply =
         typeof data === 'string' ? data : data.text ?? JSON.stringify(data);
 
