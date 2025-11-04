@@ -47,14 +47,23 @@ class PromptAPI(MethodView):
         try:
             # forward the prompt to n8n webhook and wait for JSON response
             # Use a 5 minute timeout (300 seconds) to accommodate longer n8n flows
+            print(f"[DEBUG] Sending to n8n: {n8n_url}")
+            print(f"[DEBUG] Payload: {payload}")
             resp = requests.post(n8n_url, json=payload, timeout=300)
+            print(f"[DEBUG] n8n status code: {resp.status_code}")
+            print(f"[DEBUG] n8n response text (first 500 chars): {resp.text[:500]}")
         except requests.RequestException as exc:
+            print(f"[ERROR] Failed to contact n8n: {exc}")
             return jsonify({"error": "failed to contact n8n", "details": str(exc)}), 502
 
         # Try to parse JSON from n8n; return raw text if parse fails
         try:
             resp_json = resp.json()
-        except ValueError:
+            print(f"[DEBUG] Parsed n8n JSON response: {resp_json}")
+        except ValueError as e:
+            print(f"[ERROR] Failed to parse n8n JSON: {e}")
             resp_json = {"text": resp.text}
 
-        return jsonify({"n8n_response": resp_json}), resp.status_code
+        result = {"n8n_response": resp_json}
+        print(f"[DEBUG] Returning to frontend: {result}")
+        return jsonify(result), resp.status_code

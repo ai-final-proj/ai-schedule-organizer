@@ -99,26 +99,58 @@ export class ChatScreenComponent implements AfterViewInit {
           sessionId: this.sessionId,
         }),
       });
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+
+      console.log('Response status:', res.status);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Response error:', errorText);
+        throw new Error(`${res.status} ${res.statusText}: ${errorText}`);
+      }
 
       let data: any = null;
       try {
         data = await res.json();
-      } catch {
+        console.log('Response data:', data);
+      } catch (err) {
+        console.error('Failed to parse JSON:', err);
         data = null;
       }
 
-      const reply =
-        data && data.n8n_response
-          ? typeof data.n8n_response === 'string'
-            ? data.n8n_response
-            : data.n8n_response.text ?? JSON.stringify(data.n8n_response)
-          : data && data.text
-          ? data.text
-          : 'No response from n8n.';
+      let reply = '';
+      if (data && data.n8n_response) {
+        if (typeof data.n8n_response === 'string') {
+          reply = data.n8n_response;
+        } else if (data.n8n_response.text) {
+          reply = data.n8n_response.text;
+        } else if (data.n8n_response.output) {
+          reply = data.n8n_response.output;
+        } else if (
+          Array.isArray(data.n8n_response) &&
+          data.n8n_response.length > 0
+        ) {
+          // Handle array response from n8n
+          const firstItem = data.n8n_response[0];
+          reply =
+            firstItem.text || firstItem.output || JSON.stringify(firstItem);
+        } else {
+          reply = JSON.stringify(data.n8n_response);
+        }
+      } else if (data && data.text) {
+        reply = data.text;
+      } else {
+        reply = 'No response from n8n.';
+      }
+
+      console.log('Final reply:', reply);
+
+      if (!reply || reply.trim() === '' || reply === '{}') {
+        reply = 'Received empty response from AI. Please try again.';
+      }
 
       this.pushAiMessage(reply);
     } catch (err) {
+      console.error('Send error:', err);
       this.pushAiMessage(`Webhook error: ${String(err)}`);
     } finally {
       this.sending = false;
