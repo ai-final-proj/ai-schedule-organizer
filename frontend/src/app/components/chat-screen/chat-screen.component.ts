@@ -117,34 +117,20 @@ export class ChatScreenComponent implements AfterViewInit {
         data = null;
       }
 
+      // Use the utility function to extract text from any response format
       let reply = '';
+
       if (data && data.n8n_response) {
-        if (typeof data.n8n_response === 'string') {
-          reply = data.n8n_response;
-        } else if (data.n8n_response.text) {
-          reply = data.n8n_response.text;
-        } else if (data.n8n_response.output) {
-          reply = data.n8n_response.output;
-        } else if (
-          Array.isArray(data.n8n_response) &&
-          data.n8n_response.length > 0
-        ) {
-          // Handle array response from n8n
-          const firstItem = data.n8n_response[0];
-          reply =
-            firstItem.text || firstItem.output || JSON.stringify(firstItem);
-        } else {
-          reply = JSON.stringify(data.n8n_response);
-        }
-      } else if (data && data.text) {
-        reply = data.text;
-      } else {
-        reply = 'No response from n8n.';
+        reply = this.extractTextFromResponse(data.n8n_response);
+      } else if (data) {
+        reply = this.extractTextFromResponse(data);
       }
 
       console.log('Final reply:', reply);
 
-      if (!reply || reply.trim() === '' || reply === '{}') {
+      // Check if we got empty or invalid response
+      if (!reply || reply.trim() === '' || reply === '{}' || reply === '[]') {
+        console.warn('Empty response detected, full data:', data);
         reply = 'Received empty response from AI. Please try again.';
       }
 
@@ -183,6 +169,61 @@ export class ChatScreenComponent implements AfterViewInit {
       content,
       time: now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
     });
+  }
+
+  /**
+   * Recursively extract text content from various n8n response formats
+   */
+  private extractTextFromResponse(data: any): string {
+    // Handle null/undefined
+    if (!data) return '';
+
+    // Handle string
+    if (typeof data === 'string') return data;
+
+    // Handle array - try to extract text from each item
+    if (Array.isArray(data)) {
+      return data
+        .map((item) => this.extractTextFromResponse(item))
+        .filter((text) => text.trim() !== '')
+        .join('\n\n');
+    }
+
+    // Handle object - try common text field names
+    if (typeof data === 'object') {
+      // Priority order for text fields
+      const textFields = [
+        'description',
+        'text',
+        'message',
+        'output',
+        'response',
+        'result',
+        'content',
+        'body',
+        'data',
+      ];
+
+      for (const field of textFields) {
+        if (data[field]) {
+          const extracted = this.extractTextFromResponse(data[field]);
+          if (extracted) return extracted;
+        }
+      }
+
+      // If no known field found, stringify but try to make it readable
+      try {
+        const stringified = JSON.stringify(data, null, 2);
+        // Don't return empty objects
+        if (stringified === '{}' || stringified === '[]') return '';
+        return stringified;
+      } catch {
+        return String(data);
+      }
+    }
+
+    // Fallback
+    return String(data);
   }
 
   /**

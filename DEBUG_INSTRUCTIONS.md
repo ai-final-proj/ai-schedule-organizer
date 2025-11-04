@@ -6,12 +6,14 @@ I've added extensive logging to help debug the empty response issue:
 
 ### Frontend Changes (`chat-screen.component.ts`)
 - Added console logging for response status, data, and final reply
-- Improved response parsing to handle multiple n8n response formats:
-  - String responses
-  - Objects with `text` property
-  - Objects with `output` property  
-  - Array responses (takes first item)
+- Implemented robust recursive text extraction that handles ANY n8n response format:
+  - Direct string responses
+  - Objects with common text fields: `description`, `text`, `message`, `output`, `response`, `result`, `content`, `body`, `data`
+  - Nested arrays (extracts and joins all text content)
+  - Complex nested objects (recursively searches for text)
+  - Fallback to pretty-printed JSON for unknown formats
 - Added detection for empty responses with helpful error message
+- Simplified code using `extractTextFromResponse()` utility function
 
 ### Backend Changes (`prompt.py`)
 - Added debug logging for:
@@ -85,6 +87,89 @@ In the Docker logs, you should now see:
 - The code now handles multiple response formats
 - If n8n returns a format we don't handle, it will be stringified and shown
 - Check the console logs to see the exact format
+
+## Response Formats Now Handled
+
+The new `extractTextFromResponse()` function can handle ANY of these n8n response formats:
+
+### Format 1: Simple String
+```json
+{"n8n_response": "Hello, how can I help?"}
+```
+**Result:** "Hello, how can I help?"
+
+### Format 2: Object with text field
+```json
+{"n8n_response": {"text": "Your answer here"}}
+```
+**Result:** "Your answer here"
+
+### Format 3: Array of objects with descriptions (your current format)
+```json
+{
+  "n8n_response": {
+    "text": [
+      {"task_index": 0, "description": "First task completed"},
+      {"task_index": 1, "description": "Second task completed"}
+    ]
+  }
+}
+```
+**Result:**
+```
+First task completed
+
+Second task completed
+```
+
+### Format 4: Direct array
+```json
+{"n8n_response": ["Item 1", "Item 2", "Item 3"]}
+```
+**Result:**
+```
+Item 1
+
+Item 2
+
+Item 3
+```
+
+### Format 5: Nested objects
+```json
+{
+  "n8n_response": {
+    "result": {
+      "message": "Operation successful"
+    }
+  }
+}
+```
+**Result:** "Operation successful"
+
+### Format 6: Multiple text fields (tries in priority order)
+```json
+{
+  "n8n_response": {
+    "output": "This will be shown",
+    "text": "This won't (lower priority)"
+  }
+}
+```
+**Result:** "This will be shown"
+
+The function tries these fields in order:
+1. `description`
+2. `text`
+3. `message`
+4. `output`
+5. `response`
+6. `result`
+7. `content`
+8. `body`
+9. `data`
+
+If none are found, it pretty-prints the JSON.
 
 ## Quick Debug Commands
 
