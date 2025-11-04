@@ -1,5 +1,8 @@
 /* Make the component fill the available space from the parent */
-:host { display: block; height: 100%; }
+:host {
+  display: block;
+  height: 100%;
+}
 
 /* Page area (inside your main content) */
 .chat-page {
@@ -14,9 +17,9 @@
 /* Card */
 .chat-card {
   background: var(--card, #fff);
-  border: 1px solid var(--border, rgba(0,0,0,0.08));
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
   border-radius: calc(var(--radius, 10px) + 2px);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02) inset;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02) inset;
   width: 100%;
   max-height: 100%; /* Prevent card from exceeding parent height */
   display: flex;
@@ -26,18 +29,32 @@
 
 /* Header */
 .chat-header {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
 }
 .icon-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
   background: var(--accent, #e9ebef);
   border: 1px solid color-mix(in oklch, var(--border) 60%, transparent);
   color: var(--foreground);
 }
-.title { margin: 0; font-size: var(--text-base, 1rem); font-weight: var(--font-weight-medium, 600); }
-.spacer { margin-left: auto; }
+.title {
+  margin: 0;
+  font-size: var(--text-base, 1rem);
+  font-weight: var(--font-weight-medium, 600);
+}
+.spacer {
+  margin-left: auto;
+}
 
 /* Messages (scroll area) */
 .messages {
@@ -51,43 +68,81 @@
 
 /* Bubbles */
 .bubble {
-  display: flex; gap: 10px; max-width: 80%;
+  display: flex;
+  gap: 10px;
+  max-width: 80%;
 }
-.bubble.user { align-self: flex-end; flex-direction: row-reverse; }
-.bubble.ai   { align-self: flex-start; }
+.bubble.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+.bubble.ai {
+  align-self: flex-start;
+}
 
 .avatar {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: #111827; color: #fff; display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #111827;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 .content {
   background: var(--muted, #ececf0);
-  padding: 10px 12px; border-radius: 14px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  padding: 10px 12px;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 .bubble.user .content {
   background: var(--primary, #030213);
   color: var(--primary-foreground, #fff);
 }
 
-.content p { margin: 0 0 6px 0; line-height: 1.4; white-space: pre-line; }
-.time { font-size: 11px; opacity: .7; }
+.content p {
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+.time {
+  font-size: 11px;
+  opacity: 0.7;
+}
 
 /* Sticky input */
 .input-row {
-  display: flex; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
 }
 .msg-input {
-  flex: 1; padding: 12px 14px; border: 1px solid var(--border); border-radius: 9999px;
-  outline: none; background: var(--input-background, #f3f3f5);
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  outline: none;
+  background: var(--input-background, #f3f3f5);
 }
-.msg-input:focus { box-shadow: 0 0 0 2px color-mix(in oklch, var(--ring) 60%, transparent); }
+.msg-input:focus {
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--ring) 60%, transparent);
+}
 
 .send-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: 0 16px; border: none; border-radius: 9999px; cursor: pointer;
-  background: var(--primary, #030213); color: var(--primary-foreground, #fff);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  background: var(--primary, #030213);
+  color: var(--primary-foreground, #fff);
   height: 44px;
 }
 .send-btn[disabled] {
