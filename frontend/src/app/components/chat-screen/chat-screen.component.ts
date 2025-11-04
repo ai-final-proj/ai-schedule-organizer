@@ -34,9 +34,6 @@ export class ChatScreenComponent implements AfterViewInit {
   inputValue = '';
   sending = false;
 
-  private readonly webhookUrl =
-    'http://35.224.46.46:5678/webhook/38cf2c4a-eb7a-4a66-970c-2c734a53b552';
-
   messages: Message[] = [
     {
       id: 'm1',
@@ -81,25 +78,33 @@ export class ChatScreenComponent implements AfterViewInit {
     this.sending = true;
     this.addUserMessage(prompt);
     const sessionId = uuidv4();
+
     try {
-      const payload = [
-        {
-          sessionId: sessionId,
-          action: 'sendMessage',
-          chatInput: prompt,
-        },
-      ];
-      const res = await fetch(this.webhookUrl, {
+      const res = await fetch('/api/prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          prompt,
+          sessionId,
+        }),
       });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
 
-      const raw = await res.text();
-      const data = raw ? JSON.parse(raw) : { text: '' };
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
       const reply =
-        typeof data === 'string' ? data : data.text ?? JSON.stringify(data);
+        data && data.n8n_response
+          ? typeof data.n8n_response === 'string'
+            ? data.n8n_response
+            : data.n8n_response.text ?? JSON.stringify(data.n8n_response)
+          : data && data.text
+          ? data.text
+          : 'No response from n8n.';
 
       this.pushAiMessage(reply);
     } catch (err) {

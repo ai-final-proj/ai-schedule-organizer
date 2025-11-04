@@ -2,6 +2,7 @@ from flask import request, jsonify
 from flask.views import MethodView
 from flask_smorest import Blueprint
 import requests
+from uuid import uuid4
 from ..config import Config
 
 blp = Blueprint("prompt", __name__, description="Forward prompts to n8n")
@@ -15,11 +16,17 @@ class PromptAPI(MethodView):
         if not prompt:
             return jsonify({"error": "missing prompt"}), 400
 
-        # Build payload to send to n8n. Include any metadata as needed.
-        payload = {
-            "prompt": prompt,
-            "meta": data.get("meta", {}),
-        }
+        session_id = data.get("sessionId") or str(uuid4())
+        action = data.get("action", "sendMessage")
+
+        # Build payload to send to n8n. Match the webhook contract.
+        payload = [
+            {
+                "sessionId": session_id,
+                "action": action,
+                "chatInput": prompt,
+            }
+        ]
 
         n8n_url = Config.N8N_WEBHOOK_URL
 
