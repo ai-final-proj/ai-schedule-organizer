@@ -33,6 +33,7 @@ export class ChatScreenComponent implements AfterViewInit {
   @ViewChild('messagesScroller') messagesScroller!: ElementRef<HTMLDivElement>;
   inputValue = '';
   sending = false;
+  sessionId: string;
 
   messages: Message[] = [
     {
@@ -44,7 +45,18 @@ export class ChatScreenComponent implements AfterViewInit {
     },
   ];
 
-  constructor(private location: Location, private router: Router) {}
+  constructor(private location: Location, private router: Router) {
+    // Retrieve or create a persistent sessionId from localStorage
+    const storedSessionId = localStorage.getItem('chatSessionId');
+    if (storedSessionId) {
+      this.sessionId = storedSessionId;
+      console.log('Restored session:', this.sessionId);
+    } else {
+      this.sessionId = uuidv4();
+      localStorage.setItem('chatSessionId', this.sessionId);
+      console.log('Created new session:', this.sessionId);
+    }
+  }
 
   ngAfterViewInit() {
     this.scrollToBottom();
@@ -77,7 +89,6 @@ export class ChatScreenComponent implements AfterViewInit {
 
     this.sending = true;
     this.addUserMessage(prompt);
-    const sessionId = uuidv4();
 
     try {
       const res = await fetch('/api/prompt', {
@@ -85,7 +96,7 @@ export class ChatScreenComponent implements AfterViewInit {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt,
-          sessionId,
+          sessionId: this.sessionId,
         }),
       });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
@@ -140,5 +151,27 @@ export class ChatScreenComponent implements AfterViewInit {
       content,
       time: now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
     });
+  }
+
+  /**
+   * Reset the chat session (for debugging or starting fresh)
+   * This creates a new sessionId and clears the localStorage
+   */
+  resetSession() {
+    this.sessionId = uuidv4();
+    localStorage.setItem('chatSessionId', this.sessionId);
+    this.messages = [
+      {
+        id: 'm1',
+        type: 'ai',
+        content:
+          "Hello! I'm your AI Schedule Organizer assistant. I can help you manage schedules, resolve conflicts, and make recommendations. How can I assist you today?",
+        time: new Date().toLocaleTimeString([], {
+          hour: 'numeric',
+          minute: '2-digit',
+        }),
+      },
+    ];
+    console.log('Session reset:', this.sessionId);
   }
 }

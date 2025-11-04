@@ -4,9 +4,11 @@
 /* Page area (inside your main content) */
 .chat-page {
   height: 100%;
+  max-height: 100%;
   padding: 16px;
   background: var(--background, #fff);
   display: flex;
+  overflow: hidden; /* Prevent overflow beyond container */
 }
 
 /* Card */
@@ -16,6 +18,7 @@
   border-radius: calc(var(--radius, 10px) + 2px);
   box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02) inset;
   width: 100%;
+  max-height: 100%; /* Prevent card from exceeding parent height */
   display: flex;
   flex-direction: column;
   min-height: 0; /* allow children to flex and scroll */

@@ -45,6 +45,8 @@
 .app-content {
   flex: 1 1 auto;
   padding: 24px;
+  overflow: auto; /* Allow scrolling if content exceeds available height */
+  min-height: 0; /* Important for proper flex behavior with overflow */
 }
 
 /* FAB from earlier (yellow circle) */
